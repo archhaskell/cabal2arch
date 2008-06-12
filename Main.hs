@@ -13,6 +13,8 @@
 -- Portability:
 --
 
+-- TODO: libraries should be "haskell-$packagefoo"
+
 import Distribution.PackageDescription
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
@@ -37,11 +39,12 @@ import System.Exit
 import System.IO
 import Control.Monad
 import System.Directory
+import Debug.Trace
 
 main :: IO ()
 main =
  bracket
-   -- Set up a temp dir to work in
+   -- We do all our work in a temp directory
   (do cwd  <- getCurrentDirectory
       etmp <- readProcess "mktemp" ["-d"] []
       case etmp of
@@ -73,7 +76,7 @@ main =
    let pkgbuild' = cabal2pkg cabalsrc
 
    pkgbuild  <- getMD5 pkgbuild'
-   let doc      = pkg2doc email pkgbuild
+   let doc       = pkg2doc email pkgbuild
    putStrLn (render doc)
 
 ------------------------------------------------------------------------
@@ -170,34 +173,62 @@ pkg2doc email pkg = vcat
     <=> dispNoQuotes (arch_source pkg)
  , text "md5sum"
     <=> disp (arch_md5sum pkg)
+ , hang
+    (text "build() {") 4
+             (vcat $ (map text) (arch_build pkg))
+   $$ char '}'
  ]
 
 --
 -- | Tranlsate a generic cabal file into a PGKBUILD
 --
 cabal2pkg :: GenericPackageDescription -> PkgBuild
+
 cabal2pkg GenericPackageDescription
     { packageDescription = cabal
     , genPackageFlags    = _cabal_genPackageFlags
-    , condLibrary        = _cabal_condLibrary
+    , condLibrary        = _cabal_condLibrary -- Nothing, if executables only
     , condExecutables    = _cabal_condExecutables
     }
-  = emptyPkgBuild
+
+--  = trace (show _cabal_condExecutables ) $
+  =
+   emptyPkgBuild
     { arch_pkgname = name
     , arch_pkgver  = vers
-    , arch_url     = homepage   cabal
-    , arch_pkgdesc = synopsis   cabal
+    , arch_url     = homepage cabal
+    , arch_pkgdesc = synopsis cabal
     , arch_license = ArchList [license cabal]
 
     -- All Hackage packages depend on GHC at build time
+    -- All Haskell libraries are prefixed with "haskell-"
     , arch_makedepends = (arch_makedepends emptyPkgBuild)
                             `mappend`
-                         (ArchList (buildDepends cabal))
+                         ArchList
+                             [ ArchDep (Dependency ("haskell"++d) v)
+                             | Dependency d v <- buildDepends cabal ]
+
+    -- need the dependencies of all flags that are on by default, for all libraries and executables
 
     -- Hackage programs only need their own source to build
     , arch_source  = ArchList . return $
           "http://hackage.haskell.org/packages/archive/"
        ++ (name </> display vers </> name <-> display vers <.> "tar.gz")
+
+    -- Generate the build/install script
+    , arch_build =
+        [ "cd $startdir/src/" </> name <-> display vers
+        , "runhaskell Setup configure --prefix=/usr || return 1"
+        , "runhaskell Setup build                   || return 1"
+        , "runhaskell Setup register   --gen-script || return 1"
+        , "runhaskell Setup unregister --gen-script || return 1"
+        , "install -D -m744 register.sh   $startdir/pkg/usr/share/haskell/$pkgname/register.sh"
+        , "install    -m744 unregister.sh $startdir/pkg/usr/share/haskell/$pkgname/unregister.sh"
+        , "runhaskell Setup copy --destdir=$startdir/pkg || return 1"
+        , "install -D -m644 " ++ licenseFile cabal ++
+                             " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1"
+        ]
+
     }
   where
     name = pkgName (package cabal)
@@ -246,13 +277,13 @@ data PkgBuild =
         -- should be placed in $pkgdir/usr/share/licenses/$pkgname when
         -- building the package. If multiple licenses are applicable for a
         -- package, list all of them: license=(´GPL´ ´FDL´).
-    , arch_makedepends :: ArchList Dependency
+    , arch_makedepends :: ArchList ArchDep
         -- ^
         -- An array of packages that this package depends on to build, but are
         -- not needed at runtime. Packages in this list follow the same format
         -- as depends.
 
-    , arch_depends     :: ArchList Dependency
+    , arch_depends     :: ArchList ArchDep
         -- ^
         -- An array of packages that this package depends on to run. Packages
         -- in this list should be surrounded with single quotes and contain at
@@ -279,6 +310,9 @@ data PkgBuild =
         -- supports multiple integrity algorithms and their corresponding
         -- arrays (i.e. sha1sums for the SHA1 algorithm); however, official
         -- packages use only md5sums for the time being.
+    , arch_build        :: [String]
+        -- Build hooks
+
     }
     deriving (Show, Eq)
 
@@ -287,24 +321,63 @@ data PkgBuild =
 --
 emptyPkgBuild :: PkgBuild
 emptyPkgBuild =
-    PkgBuild
-        { arch_pkgname     = pkgName (package e)
-        , arch_pkgver      = pkgVersion (package e)
-        , arch_pkgrel      = 1
-        , arch_pkgdesc     = synopsis e
-        , arch_arch        = ArchList [X86, X86_64]
-        , arch_url         = homepage e
-        , arch_license     = ArchList [license e]
-        , arch_makedepends = ArchList [(Dependency "ghc" AnyVersion)]
-        , arch_depends     = ArchList []
-        , arch_source      = ArchList []
-        , arch_md5sum      = ArchList []
-        }
+  PkgBuild
+    { arch_pkgname     = pkgName (package e)
+    , arch_pkgver      = pkgVersion (package e)
+    , arch_pkgrel      = 1
+    , arch_pkgdesc     = synopsis e
+    , arch_arch        = ArchList [X86, X86_64]
+    , arch_url         = homepage e
+    , arch_license     = ArchList [license e]
+    , arch_makedepends = ArchList [(ArchDep (Dependency "ghc" AnyVersion))]
+    , arch_depends     = ArchList []
+    , arch_source      = ArchList []
+    , arch_md5sum      = ArchList []
+    , arch_build       = []
+    }
   where
     e = emptyPackageDescription
 
 ------------------------------------------------------------------------
 -- Extra pretty printer instances and types
+
+newtype ArchDep = ArchDep Dependency
+  deriving (Eq,Show)
+
+-- the PKGBUILD version spec is less expressive than cabal, we can't really handle
+-- unions or intersections well yet.
+
+instance Text ArchDep where
+  disp (ArchDep (Dependency name ver)) =
+    text name <> mydisp ver
+   where
+     --  >= (greater than or equal to), <= (less than or
+     --  equal to), = (equal to), > (greater than), or <
+      mydisp AnyVersion           = empty
+
+      mydisp (ThisVersion    v)   = text "=" <> disp v
+      mydisp (LaterVersion   v)   = char '>' <> disp v
+      mydisp (EarlierVersion v)   = char '<' <> disp v
+
+      mydisp (UnionVersionRanges (ThisVersion  v1) (LaterVersion v2))
+        | v1 == v2 = text ">=" <> disp v1
+      mydisp (UnionVersionRanges (LaterVersion v2) (ThisVersion  v1))
+        | v1 == v2 = text ">=" <> disp v1
+      mydisp (UnionVersionRanges (ThisVersion v1) (EarlierVersion v2))
+        | v1 == v2 = text "<=" <> disp v1
+      mydisp (UnionVersionRanges (EarlierVersion v2) (ThisVersion v1))
+        | v1 == v2 = text "<=" <> disp v1
+
+{-
+      mydisp (UnionVersionRanges r1 r2)
+        = disp r1 <+> text "||" <+> disp r2
+
+      mydisp (IntersectVersionRanges r1 r2)
+        = disp r1 <+> text "&&" <+> disp r2
+-}
+      mydisp x = error $ "Can't handle this version format yet: " ++ show x
+
+  parse = undefined
 
 --
 -- | Valid linux platforms
@@ -339,6 +412,8 @@ dispNoQuotes (ArchList xs) =
          parens (hcat
                 (intersperse space
                     (map disp xs)))
+
+------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Some extras
