@@ -16,30 +16,38 @@
 -- TODO: libraries should be "haskell-$packagefoo"
 
 import Distribution.PackageDescription
+import Distribution.PackageDescription.Configuration
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
 import Distribution.Version
 import Distribution.Package
 import Distribution.License
 import Distribution.Text
+import Distribution.Compiler
+import Distribution.System
+import Distribution.Simple.PackageIndex
 
 import Data.Digest.MD5
 import qualified Data.ByteString.Lazy as B
 
-import Control.Exception
-import Data.List
-import Data.Monoid
-import System.Environment
-import Control.Concurrent
-import qualified Control.Exception as C
-import System.Process
-import Text.PrettyPrint
-import System.FilePath
-import System.Exit
-import System.IO
 import Control.Monad
+import Control.Concurrent
+import Control.Exception
+import qualified Control.Exception as C
+
+import Data.List
+import Data.Maybe
+import Data.Monoid
+
+import Text.PrettyPrint
+
 import System.Directory
-import Debug.Trace
+import System.Environment
+import System.Exit
+import System.FilePath
+import System.IO
+import System.Process
+
 
 main :: IO ()
 main =
@@ -73,17 +81,46 @@ main =
    hPutStrLn stderr $ "Using " ++ cabalfile
 
    cabalsrc  <- readPackageDescription normal cabalfile
-   let pkgbuild' = cabal2pkg cabalsrc
+
+   -- Create a package description with all configurations resolved.
+   let e_finalcabalsrc = finalizePackageDescription
+        []
+        (Nothing :: Maybe (PackageIndex PackageIdentifier))
+        buildOS -- linux/x86_64
+        X86_64
+        (CompilerId GHC (Version [6,8,2] []))
+
+        -- now constrain it to solve in the context of a modern ghc only
+        corePackages
+        cabalsrc
+
+   finalcabal <- case e_finalcabalsrc of
+        Left deps     -> die $ "Unresolved dependencies: " ++show deps
+        Right (pkg,_) ->
+            return $ pkg { buildDepends = removeCoreFrom (buildDepends pkg) }
+
+   let (pkgbuild', hooks) = cabal2pkg finalcabal
 
    pkgbuild  <- getMD5 pkgbuild'
    let doc       = pkg2doc email pkgbuild
-   putStrLn (render doc)
+
+   setCurrentDirectory cwd
+   writeFile "PKGBUILD" (render doc)
+
+   -- print pkgname.install
+   case hooks of
+        Nothing -> return ()
+        Just i  -> writeFile (install_hook_name (arch_pkgname pkgbuild')) i
+
 
 ------------------------------------------------------------------------
 
 -- | Given an abstract pkgbuild, download the source bundle,
 -- and compute its md5, returning a modified PkgBuild with
 -- the md5 set.
+--
+-- TODO we may want to use a local package.
+--
 getMD5 :: PkgBuild -> IO PkgBuild
 getMD5 pkg@(PkgBuild { arch_source = ArchList [url] }) = do
    hPutStrLn stderr $ "Fetching " ++ url
@@ -98,6 +135,63 @@ getMD5 pkg@(PkgBuild { arch_source = ArchList [url] }) = do
             let !md5sum = show (md5 src)
             return pkg { arch_md5sum = ArchList [md5sum] }
 getMD5 _ = die "Malformed PkgBuild"
+
+-- attempt to filter out core packages we've already satisified
+-- not actuall correct, since it doesn't take any version
+-- info into account.
+--
+-- Really need to use satisfyDep or friends.
+-- TODO do this properly
+--
+removeCoreFrom :: [Dependency] -> [Dependency]
+removeCoreFrom []               = []
+removeCoreFrom (x@(Dependency n _):xs) =
+  case find (\(Dependency k _) -> n == k) corePackages of
+    Just _ -> removeCoreFrom xs
+    Nothing -> x : removeCoreFrom xs
+
+--
+-- Core packages and their versions. These come with
+-- ghc, so we should be right.
+--
+-- TODO populate this based on a dynamic check.
+--
+corePackages :: [Dependency]
+corePackages =
+    [Dependency "array"            (ThisVersion (Version  [0,1,0,0] []))
+    ,Dependency "base"             (ThisVersion (Version  [3,0,1,0] []))
+    ,Dependency "bytestring"       (ThisVersion (Version  [0,9,0,1] []))
+    ,Dependency "Cabal"            (ThisVersion (Version  [1,2,3,0] []))
+    ,Dependency "containers"       (ThisVersion (Version  [0,1,0,1] []))
+    ,Dependency "directory"        (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "filepath"         (ThisVersion (Version  [1,1,0,0] []))
+    ,Dependency "haskell98"        (ThisVersion (Version  [1,0,1,0] []))
+    ,Dependency "hpc"              (ThisVersion (Version  [0,5,0,0] []))
+    ,Dependency "old-locale"       (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "old-time"         (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "packedstring"     (ThisVersion (Version  [0,1,0,0] []))
+    ,Dependency "pretty"           (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "process"          (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "random"           (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "template-haskell" (ThisVersion (Version  [2,2,0,0] []))
+    ,Dependency "unix"             (ThisVersion (Version  [2,3,0,0] []))
+    ]
+
+{-
+    Cabal-1.2.3.0, GLUT-2.1.1.1, HUnit-1.2.0.0,
+    OpenAL-1.3.1.1, OpenGL-2.2.1.1, QuickCheck-1.1.0.0, X11-1.4.2,
+    array-0.1.0.0, base-3.0.1.0, bytestring-0.9.0.1, cgi-3001.1.5.1,
+    containers-0.1.0.1, directory-1.0.0.0, fgl-5.4.1.1,
+    filepath-1.1.0.0, (ghc-6.8.2), haskell-src-1.0.1.1,
+    haskell98-1.0.1.0, hpc-0.5.0.0, html-1.0.1.1, mtl-1.1.0.0,
+    network-2.1.0.0, old-locale-1.0.0.0, old-time-1.0.0.0,
+    packedstring-0.1.0.0, parallel-1.0.0.0, parsec-2.1.0.0,
+    pretty-1.0.0.0, process-1.0.0.0, random-1.0.0.0, readline-1.0.1.0,
+    regex-base-0.72.0.1, regex-compat-0.71.0.1, regex-posix-0.72.0.2,
+    rts-1.0, stm-2.1.1.0, template-haskell-2.2.0.0, time-1.1.2.0,
+    unix-2.3.0.0, xhtml-3000.0.2.1
+
+-}
 
 -- Return the path to a .cabal file.
 -- If not arguments are specified, use ".",
@@ -171,7 +265,10 @@ pkg2doc email pkg = vcat
     <=> disp (arch_makedepends pkg)
  , text "source"
     <=> dispNoQuotes (arch_source pkg)
- , text "md5sum"
+ , case arch_install pkg of
+    Nothing -> empty
+    Just p  -> text "install" <=> disp p
+ , text "md5sums"
     <=> disp (arch_md5sum pkg)
  , hang
     (text "build() {") 4
@@ -182,30 +279,36 @@ pkg2doc email pkg = vcat
 --
 -- | Tranlsate a generic cabal file into a PGKBUILD
 --
-cabal2pkg :: GenericPackageDescription -> PkgBuild
+cabal2pkg :: PackageDescription -> (PkgBuild, Maybe String)
+cabal2pkg cabal
 
-cabal2pkg GenericPackageDescription
-    { packageDescription = cabal
-    , genPackageFlags    = _cabal_genPackageFlags
-    , condLibrary        = _cabal_condLibrary -- Nothing, if executables only
-    , condExecutables    = _cabal_condExecutables
-    }
+-- TODO decide if its a library or an executable,
+-- handle mullltipackages
+-- extract C dependencies
 
 --  = trace (show _cabal_condExecutables ) $
   =
-   emptyPkgBuild
-    { arch_pkgname = name
+  (emptyPkgBuild
+    { arch_pkgname = archName
     , arch_pkgver  = vers
-    , arch_url     = homepage cabal
+    , arch_url     =
+        if null (homepage cabal)
+          then "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++name
+          else homepage cabal
     , arch_pkgdesc = synopsis cabal
-    , arch_license = ArchList [license cabal]
+    , arch_license =
+        ArchList . return $
+            case license cabal of
+                GPL  -> GPL
+                LGPL -> LGPL
+                l    -> UnknownLicense ("custom:"++ show l)
 
     -- All Hackage packages depend on GHC at build time
     -- All Haskell libraries are prefixed with "haskell-"
     , arch_makedepends = (arch_makedepends emptyPkgBuild)
                             `mappend`
                          ArchList
-                             [ ArchDep (Dependency ("haskell"++d) v)
+                             [ ArchDep (Dependency ("haskell" <-> d) v)
                              | Dependency d v <- buildDepends cabal ]
 
     -- need the dependencies of all flags that are on by default, for all libraries and executables
@@ -215,31 +318,70 @@ cabal2pkg GenericPackageDescription
           "http://hackage.haskell.org/packages/archive/"
        ++ (name </> display vers </> name <-> display vers <.> "tar.gz")
 
-    -- TODOO
-    -- install=haskell-utf8-string.install
-    -- install=('pcre-light.install')
-
     , arch_build =
         [ "cd $startdir/src/" </> name <-> display vers
         , "runhaskell Setup configure --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
+        ] ++
 
     -- Only needed for libraries:
-    -- Generate the build/install script
-        , "runhaskell Setup register   --gen-script || return 1"
-        , "runhaskell Setup unregister --gen-script || return 1"
-        , "install -D -m744 register.sh   $startdir/pkg/usr/share/haskell/$pkgname/register.sh"
-        , "install    -m744 unregister.sh $startdir/pkg/usr/share/haskell/$pkgname/unregister.sh"
+        (if hasLibrary
+           then
+            ["runhaskell Setup register   --gen-script || return 1"
+            ,"runhaskell Setup unregister --gen-script || return 1"
+            ,"install -D -m744 register.sh   $startdir/pkg/usr/share/haskell/$pkgname/register.sh"
+            , "install    -m744 unregister.sh $startdir/pkg/usr/share/haskell/$pkgname/unregister.sh"
+            ]
+           else [])
+         ++
+         ["runhaskell Setup copy --destdir=$startdir/pkg || return 1"]
+         ++
+         (if license cabal `notElem` [GPL,LGPL]
+          then ["install -D -m644 " ++ licenseFile cabal ++
+                    " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1" ]
+          else [])
 
-        , "runhaskell Setup copy --destdir=$startdir/pkg || return 1"
-        , "install -D -m644 " ++ licenseFile cabal ++
-                             " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1"
-        ]
+    -- if its a library:
+    , arch_install = if hasLibrary then Just $ install_hook_name archName
+                                   else Nothing
 
-    }
+    }, if hasLibrary
+          then Just (install_hook archName)
+          else Nothing
+    )
+
   where
-    name = pkgName (package cabal)
-    vers = pkgVersion (package cabal)
+    archName = if isLibrary then "haskell-" ++ name else name
+    name     = pkgName (package cabal)
+    vers     = pkgVersion (package cabal)
+
+    hasLibrary = isJust (library cabal)
+    isLibrary  = isJust (library cabal) && null (executables cabal)
+
+--
+-- post install, and pre-remove hooks to run, to sync up ghc-pkg
+--
+install_hook_name :: String -> String
+install_hook_name pkgname = pkgname <.> "install"
+
+install_hook :: String -> String
+install_hook pkgname = unlines
+    [ "HS_DIR=/usr/share/haskell/" ++ pkgname
+    , "post_install() {"
+    , "  ${HS_DIR}/register.sh"
+    , "}"
+    , "pre_upgrade() {"
+    , "  ${HS_DIR}/unregister.sh"
+    , "}"
+    , "post_upgrade() {"
+    , "  ${HS_DIR}/register.sh"
+    , "}"
+    , "pre_remove() {"
+    , "  ${HS_DIR}/unregister.sh"
+    , "}"
+    , "op=$1"
+    , "shift"
+    , "$op $*" ]
 
 -- 
 -- | A data type to represent PKGBUILD files
@@ -264,7 +406,7 @@ data PkgBuild =
         -- ^
         -- This should be a brief description of the package and its
         -- functionality. Try to keep the description to one line of text.
-    , arch_arch    :: ArchList Arch
+    , arch_arch    :: ArchList ArchArch
         -- ^
         -- Defines on which architectures the given package is
         -- available (e.g. arch=(´i686´ ´x86_64´)).
@@ -318,7 +460,16 @@ data PkgBuild =
         -- arrays (i.e. sha1sums for the SHA1 algorithm); however, official
         -- packages use only md5sums for the time being.
     , arch_build        :: [String]
-        -- Build hooks
+        -- ^
+        -- The build hook
+
+    , arch_install      :: Maybe String
+        -- ^
+        -- Specifies a special install script that is to be included in the package. This
+        -- file should reside in the same directory as the PKGBUILD, and will be copied
+        -- into the package by makepkg. It does not need to be included in the source
+        -- array (e.g.  install=pkgname.install).
+
 
     }
     deriving (Show, Eq)
@@ -333,7 +484,7 @@ emptyPkgBuild =
     , arch_pkgver      = pkgVersion (package e)
     , arch_pkgrel      = 1
     , arch_pkgdesc     = synopsis e
-    , arch_arch        = ArchList [X86, X86_64]
+    , arch_arch        = ArchList [Arch_X86, Arch_X86_64]
     , arch_url         = homepage e
     , arch_license     = ArchList [license e]
     , arch_makedepends = ArchList [(ArchDep (Dependency "ghc" AnyVersion))]
@@ -343,6 +494,7 @@ emptyPkgBuild =
     , arch_md5sum      = ArchList []
         -- sha1sums=('a08670e4c749850714205f425cb460ed5a0a56b2')
     , arch_build       = []
+    , arch_install     = Nothing  -- executable
     }
   where
     e = emptyPackageDescription
@@ -353,8 +505,8 @@ emptyPkgBuild =
 newtype ArchDep = ArchDep Dependency
   deriving (Eq,Show)
 
--- the PKGBUILD version spec is less expressive than cabal, we can't really handle
--- unions or intersections well yet.
+-- the PKGBUILD version spec is less expressive than cabal, we can't
+-- really handle unions or intersections well yet.
 
 instance Text ArchDep where
   disp (ArchDep (Dependency name ver)) =
@@ -384,6 +536,7 @@ instance Text ArchDep where
       mydisp (IntersectVersionRanges r1 r2)
         = disp r1 <+> text "&&" <+> disp r2
 -}
+
       mydisp x = error $ "Can't handle this version format yet: " ++ show x
 
   parse = undefined
@@ -391,13 +544,13 @@ instance Text ArchDep where
 --
 -- | Valid linux platforms
 --
-data Arch = X86 | X86_64
+data ArchArch = Arch_X86 | Arch_X86_64
     deriving (Show, Eq)
 
-instance Text Arch where
+instance Text ArchArch where
     disp x = case x of
-       X86      -> text "i686"
-       X86_64   -> text "x86_64"
+       Arch_X86      -> text "i686"
+       Arch_X86_64   -> text "x86_64"
     parse = error "Text.parrse not defined for ArchList"
 
 -- Lists with quotes
