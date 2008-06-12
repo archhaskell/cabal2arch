@@ -215,15 +215,22 @@ cabal2pkg GenericPackageDescription
           "http://hackage.haskell.org/packages/archive/"
        ++ (name </> display vers </> name <-> display vers <.> "tar.gz")
 
-    -- Generate the build/install script
+    -- TODOO
+    -- install=haskell-utf8-string.install
+    -- install=('pcre-light.install')
+
     , arch_build =
         [ "cd $startdir/src/" </> name <-> display vers
         , "runhaskell Setup configure --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
+
+    -- Only needed for libraries:
+    -- Generate the build/install script
         , "runhaskell Setup register   --gen-script || return 1"
         , "runhaskell Setup unregister --gen-script || return 1"
         , "install -D -m744 register.sh   $startdir/pkg/usr/share/haskell/$pkgname/register.sh"
         , "install    -m744 unregister.sh $startdir/pkg/usr/share/haskell/$pkgname/unregister.sh"
+
         , "runhaskell Setup copy --destdir=$startdir/pkg || return 1"
         , "install -D -m644 " ++ licenseFile cabal ++
                              " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1"
@@ -330,9 +337,11 @@ emptyPkgBuild =
     , arch_url         = homepage e
     , arch_license     = ArchList [license e]
     , arch_makedepends = ArchList [(ArchDep (Dependency "ghc" AnyVersion))]
+        -- makedepends=('ghc>=6.6') ?
     , arch_depends     = ArchList []
     , arch_source      = ArchList []
     , arch_md5sum      = ArchList []
+        -- sha1sums=('a08670e4c749850714205f425cb460ed5a0a56b2')
     , arch_build       = []
     }
   where
