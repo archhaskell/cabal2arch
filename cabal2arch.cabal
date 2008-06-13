@@ -24,6 +24,7 @@ executable cabal2arch
             pretty,
             process,
             directory,
+            containers,
             bytestring
     else
         build-depends:      

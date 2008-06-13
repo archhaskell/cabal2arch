@@ -37,6 +37,7 @@ import qualified Control.Exception as C
 
 import Data.List
 import Data.Maybe
+import qualified Data.Map as M
 import Data.Monoid
 import Data.Char
 import Debug.Trace
@@ -157,8 +158,8 @@ getMD5 _ = die "Malformed PkgBuild"
 -- not actuall correct, since it doesn't take any version
 -- info into account.
 --
--- Really need to use satisfyDep or friends.
--- TODO do this properly
+-- TODO this should use configDependency to find the precise
+-- versions we have available on Arch.
 --
 removeCoreFrom :: [Dependency] -> [Dependency]
 removeCoreFrom []               = []
@@ -272,6 +273,29 @@ findCabalFile cwd tmp = do
             then die $ "directory doesn't exist: " ++ show dir
             else findPackageDesc dir
 
+findCLibs :: PackageDescription -> [String]
+findCLibs (PackageDescription { library = lib, executables = exe }) =
+    -- warn for packages not in list.
+    map canonicalise (some ++ rest)
+  where
+    some = concatMap (extraLibs.buildInfo) exe
+    rest = case lib of
+                    Nothing -> []
+                    Just l  -> extraLibs (libBuildInfo l)
+
+    canonicalise k = case M.lookup k translationTable of
+        Nothing -> trace "WARNING: this library depends on a C library we do not know the pacman name for. Check the C library names in the generated PKGBUILD File" $ k
+        Just s  -> s
+
+    -- known pacman packages for C libraries we use:
+    translationTable = M.fromList
+        [("curses",     "ncurses")
+        ,("bz2",        "bzip2")
+        ,("z",          "zlib")
+        ]
+
+
+
 ------------------------------------------------------------------------
 -- Parsing and pretty printing:
 
@@ -322,7 +346,7 @@ cabal2pkg cabal
 -- handle mullltipackages
 -- extract C dependencies
 
---  = trace (show _cabal_condExecutables ) $
+-- = trace (show cabal) $
   =
   (emptyPkgBuild
     { arch_pkgname = archName
@@ -341,9 +365,14 @@ cabal2pkg cabal
     -- All Haskell libraries are prefixed with "haskell-"
     , arch_makedepends = (arch_makedepends emptyPkgBuild)
                             `mappend`
+                         -- Haskell libraries
+                         -- TODO: use a real package spec to compute these names
+                         -- based on what is in Arch.
                          ArchList
                              [ ArchDep (Dependency ("haskell" <-> map toLower d) v)
                              | Dependency d v <- buildDepends cabal ]
+                            `mappend`
+                         anyClibraries
 
     -- need the dependencies of all flags that are on by default, for all libraries and executables
 
@@ -391,6 +420,11 @@ cabal2pkg cabal
 
     hasLibrary = isJust (library cabal)
     isLibrary  = isJust (library cabal) && null (executables cabal)
+
+    anyClibraries | null libs = ArchList []
+                  | otherwise = ArchList libs
+       where
+         libs = [ ArchDep (Dependency s AnyVersion) | s <- findCLibs cabal ]
 
 --
 -- post install, and pre-remove hooks to run, to sync up ghc-pkg
@@ -571,7 +605,7 @@ instance Text ArchDep where
         = disp r1 <+> text "&&" <+> disp r2
 -}
 
-      mydisp x = trace ("Can't handle this version format yet: " ++ show x) $ empty
+      mydisp x = trace ("WARNING: Can't handle this version format yet: " ++ show x ++ "\ncheck the dependencies by hand.")$ empty
 
   parse = undefined
 
