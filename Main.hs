@@ -325,7 +325,7 @@ cabal2pkg cabal
     , arch_makedepends = (arch_makedepends emptyPkgBuild)
                             `mappend`
                          ArchList
-                             [ ArchDep (Dependency ("haskell" <-> d) v)
+                             [ ArchDep (Dependency ("haskell" <-> map toLower d) v)
                              | Dependency d v <- buildDepends cabal ]
 
     -- need the dependencies of all flags that are on by default, for all libraries and executables
