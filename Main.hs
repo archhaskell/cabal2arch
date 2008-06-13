@@ -27,7 +27,7 @@ import Distribution.Compiler
 import Distribution.System
 import Distribution.Simple.PackageIndex
 
-import Data.Digest.MD5
+import Data.Digest.Pure.MD5
 import qualified Data.ByteString.Lazy as B
 
 import Control.Monad

@@ -31,6 +31,6 @@ executable cabal2arch
 
     build-depends:
             Cabal >= 1.3.11 && < 1.5,
-            filepath,
-            pureMD5
+            pureMD5 >= 0.2.0,
+            filepath
 
