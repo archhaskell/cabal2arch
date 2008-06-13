@@ -127,7 +127,7 @@ main =
         Left (_,s,_)  -> do
             hPutStrLn stderr s
             die "Unable to tar package"
-        Right s -> putStrLn s
+        Right s -> putStrLn ("Created " ++ (cwd </>. dir <.> "tar.gz"))
 
 ------------------------------------------------------------------------
 
