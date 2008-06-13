@@ -327,10 +327,8 @@ cabal2pkg cabal
   (emptyPkgBuild
     { arch_pkgname = archName
     , arch_pkgver  = vers
-    , arch_url     =
-        if null (homepage cabal)
-          then "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++name
-          else homepage cabal
+    , arch_url     = "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++name
+ --       else homepage cabal
     , arch_pkgdesc = synopsis cabal
     , arch_license =
         ArchList . return $
