@@ -39,6 +39,7 @@ import Data.List
 import Data.Maybe
 import Data.Monoid
 import Data.Char
+import Debug.Trace
 
 import Text.PrettyPrint
 
@@ -174,40 +175,58 @@ removeCoreFrom (x@(Dependency n _):xs) =
 --
 corePackages :: [Dependency]
 corePackages =
-    [Dependency "array"            (ThisVersion (Version  [0,1,0,0] []))
+    [Dependency "ALUT"             (ThisVersion (Version  [2,1,0,0] []))
+    ,Dependency "Cabal"            (ThisVersion (Version  [1,2,3,0] []))
+    ,Dependency "GLUT"             (ThisVersion (Version  [2,1,1,1] []))
+    ,Dependency "HUnit"            (ThisVersion (Version  [1,2,0,0] []))
+    ,Dependency "OpenAL"           (ThisVersion (Version  [1,3,1,1] []))
+    ,Dependency "QuickCheck"       (ThisVersion (Version  [1,1,0,0] []))
+    ,Dependency "array"            (ThisVersion (Version  [0,1,0,0] []))
     ,Dependency "base"             (ThisVersion (Version  [3,0,1,0] []))
     ,Dependency "bytestring"       (ThisVersion (Version  [0,9,0,1] []))
-    ,Dependency "Cabal"            (ThisVersion (Version  [1,2,3,0] []))
+    ,Dependency "cgi"              (ThisVersion (Version  [3001,1,5,1] []))
     ,Dependency "containers"       (ThisVersion (Version  [0,1,0,1] []))
     ,Dependency "directory"        (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "fgl"              (ThisVersion (Version  [5,4,1,1] []))
     ,Dependency "filepath"         (ThisVersion (Version  [1,1,0,0] []))
+    ,Dependency "haskell-src"      (ThisVersion (Version  [1,0,1,1] []))
     ,Dependency "haskell98"        (ThisVersion (Version  [1,0,1,0] []))
     ,Dependency "hpc"              (ThisVersion (Version  [0,5,0,0] []))
+    ,Dependency "html"             (ThisVersion (Version  [1,0,1,1] []))
+    ,Dependency "mtl"              (ThisVersion (Version  [1,1,0,1] []))
+    ,Dependency "network"          (ThisVersion (Version  [2,1,0,0] []))
     ,Dependency "old-locale"       (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency "old-time"         (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency "packedstring"     (ThisVersion (Version  [0,1,0,0] []))
+    ,Dependency "parallel"         (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "parsec"           (ThisVersion (Version  [2,1,0,0] []))
     ,Dependency "pretty"           (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency "process"          (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency "random"           (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency "readline"         (ThisVersion (Version  [1,0,1,0] []))
+    ,Dependency "regex-base"       (ThisVersion (Version  [0,72,0,1] []))
+    ,Dependency "regex-compat"     (ThisVersion (Version  [0,71,0,1] []))
+    ,Dependency "regex-posix"      (ThisVersion (Version  [0,72,0,2] []))
+    ,Dependency "stm"              (ThisVersion (Version  [2,1,1,0] []))
     ,Dependency "template-haskell" (ThisVersion (Version  [2,2,0,0] []))
+    ,Dependency "time"             (ThisVersion (Version  [1,1,2,0] []))
     ,Dependency "unix"             (ThisVersion (Version  [2,3,0,0] []))
-    ]
+    ,Dependency "xtml"             (ThisVersion (Version  [3000,0,2,1] []))
 
 {-
-    Cabal-1.2.3.0, GLUT-2.1.1.1, HUnit-1.2.0.0,
-    OpenAL-1.3.1.1, OpenGL-2.2.1.1, QuickCheck-1.1.0.0, X11-1.4.2,
-    array-0.1.0.0, base-3.0.1.0, bytestring-0.9.0.1, cgi-3001.1.5.1,
-    containers-0.1.0.1, directory-1.0.0.0, fgl-5.4.1.1,
-    filepath-1.1.0.0, (ghc-6.8.2), haskell-src-1.0.1.1,
-    haskell98-1.0.1.0, hpc-0.5.0.0, html-1.0.1.1, mtl-1.1.0.0,
-    network-2.1.0.0, old-locale-1.0.0.0, old-time-1.0.0.0,
-    packedstring-0.1.0.0, parallel-1.0.0.0, parsec-2.1.0.0,
-    pretty-1.0.0.0, process-1.0.0.0, random-1.0.0.0, readline-1.0.1.0,
-    regex-base-0.72.0.1, regex-compat-0.71.0.1, regex-posix-0.72.0.2,
-    rts-1.0, stm-2.1.1.0, template-haskell-2.2.0.0, time-1.1.2.0,
-    unix-2.3.0.0, xhtml-3000.0.2.1
-
+ALUT-2.1.0.0        cgi-3001.1.5.1       network-2.1.0.0       regex-base-0.72.0.1
+Cabal-1.2.3.0       containers-0.1.0.1   old-locale-1.0.0.0    regex-compat-0.71.0.1
+GLUT-2.1.1.1        directory-1.0.0.0    old-time-1.0.0.0      regex-posix-0.72.0.2
+HUnit-1.2.0.0       fgl-5.4.1.1          packedstring-0.1.0.0  stm-2.1.1.0
+OpenAL-1.3.1.1      filepath-1.1.0.0     parallel-1.0.0.0      template-haskell-2.2.0.0
+OpenGL-2.2.1.1      haskell-src-1.0.1.1  parsec-2.1.0.0        time-1.1.2.0
+QuickCheck-1.1.0.0  haskell98-1.0.1.0    pretty-1.0.0.0        unix-2.3.0.0
+array-0.1.0.0       hpc-0.5.0.0          process-1.0.0.0       xhtml-3000.0.2.1
+base-3.0.1.0        html-1.0.1.1         random-1.0.0.0
+bytestring-0.9.0.1  mtl-1.1.0.0          readline-1.0.1.0
 -}
+
+    ]
 
 -- Return the path to a .cabal file.
 -- If not arguments are specified, use ".",
@@ -554,7 +573,7 @@ instance Text ArchDep where
         = disp r1 <+> text "&&" <+> disp r2
 -}
 
-      mydisp x = error $ "Can't handle this version format yet: " ++ show x
+      mydisp x = trace ("Can't handle this version format yet: " ++ show x) $ empty
 
   parse = undefined
 
