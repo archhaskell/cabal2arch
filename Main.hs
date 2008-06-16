@@ -303,6 +303,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("glib",       "glib2")
         ,("ldap",       "libldap")
         ,("SDL",        "sdl")
+        ,("pcap",        "libpcap")
         ,("m",          "")
         ]
 
@@ -310,7 +311,15 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
   --
       -- xmonad, ghc, haxml
 
-
+shouldNotBeLibraries :: [String]
+shouldNotBeLibraries =
+    ["xmonad"
+    ,"hscolour"
+    ,"distract"
+    ,"Hedi"
+    ,"conjure"
+    ,"cpphs"
+    ]
 
 ------------------------------------------------------------------------
 -- Parsing and pretty printing:
@@ -435,7 +444,8 @@ cabal2pkg cabal
     vers     = pkgVersion (package cabal)
 
     hasLibrary = isJust (library cabal)
-    isLibrary  = isJust (library cabal) && null (executables cabal)
+    isLibrary  = isJust (library cabal) -- && null (executables cabal)
+                    && map toLower name `notElem` shouldNotBeLibraries
 
     anyClibraries | null libs = ArchList []
                   | otherwise = ArchList libs
