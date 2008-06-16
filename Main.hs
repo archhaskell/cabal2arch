@@ -186,6 +186,7 @@ corePackages =
     ,Dependency "base"             (ThisVersion (Version  [3,0,1,0] []))
     ,Dependency "bytestring"       (ThisVersion (Version  [0,9,0,1] []))
     ,Dependency "cgi"              (ThisVersion (Version  [3001,1,5,1] []))
+    ,Dependency "ghc"              (AnyVersion)
     ,Dependency "containers"       (ThisVersion (Version  [0,1,0,1] []))
     ,Dependency "directory"        (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency "fgl"              (ThisVersion (Version  [5,4,1,1] []))
@@ -284,7 +285,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
                     Just l  -> extraLibs (libBuildInfo l)
 
     canonicalise k = case M.lookup k translationTable of
-        Nothing -> trace "WARNING: this library depends on a C library we do not know the pacman name for. Check the C library names in the generated PKGBUILD File" $ k
+        Nothing -> trace "WARNING: this library depends on a C library we do not know the pacman name for. Check the C library names in the generated PKGBUILD File" $ map toLower k
         Just s  -> s
 
     -- known pacman packages for C libraries we use:
@@ -293,8 +294,21 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("bz2",        "bzip2")
         ,("z",          "zlib")
         ,("Imlib2",     "imlib2")
+        ,("cblas",      "blas")
+        ,("curl",       "curl")
+        ,("xenctl",     "xen")
+        ,("odbc",       "unixodbc")
+        ,("crack",      "cracklib")
+        ,("pq",         "postgresql")
+        ,("glib",       "glib2")
+        ,("ldap",       "libldap")
+        ,("SDL",        "sdl")
         ,("m",          "")
         ]
+
+  -- TODO careful translation table for haskell libraries too,
+  --
+      -- xmonad, ghc, haxml
 
 
 
