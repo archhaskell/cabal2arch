@@ -80,7 +80,12 @@ main =
            ["--help"] -> help
            ["-h"]     -> help
            _          -> return ()
-   email     <- maybe "" id `fmap` getEnvMaybe "DARCS_EMAIL"
+   email     <- do
+       r <- getEnvMaybe "ARCH_HASKELL" 
+       case r of
+            Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contat you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.com>'"
+                          return []
+            Just s  -> return s
 
    cabalfile <- findCabalFile cwd tmp
    hPutStrLn stderr $ "Using " ++ cabalfile
@@ -277,7 +282,7 @@ findCabalFile cwd tmp = do
 findCLibs :: PackageDescription -> [String]
 findCLibs (PackageDescription { library = lib, executables = exe }) =
     -- warn for packages not in list.
-    map canonicalise (some ++ rest)
+    map (canonicalise . map toLower) (some ++ rest)
   where
     some = concatMap (extraLibs.buildInfo) exe
     rest = case lib of
@@ -296,7 +301,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("Imlib2",     "imlib2")
         ,("cblas",      "blas")
         ,("curl",       "curl")
-        ,("xenctl",     "xen")
+        ,("xenctrl",     "xen")
         ,("odbc",       "unixodbc")
         ,("crack",      "cracklib")
         ,("pq",         "postgresql")
@@ -306,6 +311,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("pcap",        "libpcap")
         ,("crypto",      "openssl")
         ,("xrandr",      "libxrandr")
+        ,("x11",      "libx11")
         ,("m",          "")
         ]
         -- atlas
