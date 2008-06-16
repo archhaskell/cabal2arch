@@ -301,15 +301,14 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("crack",      "cracklib")
         ,("pq",         "postgresql")
         ,("glib",       "glib2")
-        ,("ldap",       "libldap")
         ,("SDL",        "sdl")
+        ,("ldap",       "libldap")
         ,("pcap",        "libpcap")
+        ,("crypto",      "openssl")
+        ,("xrandr",      "libxrandr")
         ,("m",          "")
         ]
-
-  -- TODO careful translation table for haskell libraries too,
-  --
-      -- xmonad, ghc, haxml
+        -- atlas
 
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
@@ -319,6 +318,28 @@ shouldNotBeLibraries =
     ,"Hedi"
     ,"conjure"
     ,"cpphs"
+    ]
+
+-- translate some library dependencies to gtk names
+--
+gtk2hsIfy :: [Dependency] -> [Dependency]
+gtk2hsIfy [] = []
+gtk2hsIfy xs | foundSome = Dependency "gtk2hs" AnyVersion :
+                           [ v | v@(Dependency n _) <- xs
+                           , n `notElem` gtkLibs ]
+             | otherwise = xs
+
+    where
+        foundSome = not . null $ filter (`elem` gtkLibs) (map unDep xs)
+        unDep (Dependency n _) = n
+
+
+gtkLibs :: [String]
+gtkLibs =
+    ["glade" -- guihaskell
+    ,"cairo"
+    ,"glib"
+    ,"gtk"
     ]
 
 ------------------------------------------------------------------------
@@ -394,8 +415,9 @@ cabal2pkg cabal
                          -- TODO: use a real package spec to compute these names
                          -- based on what is in Arch.
                          ArchList
-                             [ ArchDep (Dependency ("haskell" <-> map toLower d) v)
-                             | Dependency d v <- buildDepends cabal ]
+                             [ ArchDep (Dependency (
+                                   if d /= "gtk2hs" then "haskell" <-> map toLower d else d) v)
+                             | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
                             `mappend`
                          anyClibraries
 
