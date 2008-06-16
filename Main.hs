@@ -292,6 +292,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         [("curses",     "ncurses")
         ,("bz2",        "bzip2")
         ,("z",          "zlib")
+        ,("Imlib2",     "imlib2")
+        ,("m",          "")
         ]
 
 
