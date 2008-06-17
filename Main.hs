@@ -117,7 +117,7 @@ main =
        dir = arch_pkgname pkgbuild
 
    setCurrentDirectory cwd
-   createDirectory dir
+   createDirectoryIfMissing False dir
    setCurrentDirectory dir
 
    writeFile "PKGBUILD" (render doc ++ "\n")
@@ -373,7 +373,7 @@ pkg2doc email pkg = vcat
  , text "pkgver"
     <=> disp (arch_pkgver pkg)
  , text "pkgdesc"
-    <=> doubleQuotes (text (arch_pkgdesc pkg))
+    <=> text (show (arch_pkgdesc pkg))
  , text "url"
     <=> doubleQuotes (text (arch_url pkg))
  , text "license"
