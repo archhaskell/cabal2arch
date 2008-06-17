@@ -295,30 +295,34 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 
     -- known pacman packages for C libraries we use:
     translationTable = M.fromList
-        [("curses",     "ncurses")
-        ,("bz2",        "bzip2")
-        ,("png",        "libpng")
-        ,("pthread",        "")
-        ,("freetype",        "freetype2")
-        ,("jpeg",        "libjpeg")
-        ,("z",          "zlib")
-        ,("Imlib2",     "imlib2")
-        ,("cblas",      "blas")
-        ,("curl",       "curl")
-        ,("xenctrl",     "xen")
-        ,("odbc",       "unixodbc")
-        ,("crack",      "cracklib")
-        ,("pq",         "postgresql")
-        ,("glib",       "glib2")
+        [("Imlib2",     "imlib2")
         ,("SDL",        "sdl")
+        ,("alut",       "freealut")
+        ,("bz2",        "bzip2")
+        ,("cblas",      "blas")
+        ,("crack",      "cracklib")
+        ,("crypto",     "openssl")
+        ,("curl",       "curl")
+        ,("freetype",   "freetype2")
+        ,("glib",       "glib2")
+
+        ,("jpeg",       "libjpeg")
         ,("ldap",       "libldap")
-        ,("pcap",        "libpcap")
-        ,("ssl",         "openssl")
-        ,("wx",           "wxgtk")
-        ,("alut",           "freealut")
-        ,("crypto",      "openssl")
-        ,("xrandr",      "libxrandr")
-        ,("x11",      "libx11")
+        ,("pcap",       "libpcap")
+        ,("png",        "libpng")
+        ,("x11",        "libx11")
+        ,("xrandr",     "libxrandr")
+        ,("xml2",       "libxml2")
+
+        ,("pq",         "postgresql")
+        ,("ssl",        "openssl")
+        ,("wx",         "wxgtk")
+        ,("xenctrl",    "xen")
+        ,("odbc",       "unixodbc")
+        ,("z",          "zlib")
+        ,("curses",     "ncurses")
+
+        ,("pthread",     "")
         ,("m",          "")
         ]
         -- atlas
@@ -459,7 +463,7 @@ cabal2pkg cabal
          ++
          ["runhaskell Setup copy --destdir=$startdir/pkg || return 1"]
          ++
-         (if license cabal `notElem` [GPL,LGPL]
+         (if not (null (licenseFile cabal)) && license cabal `notElem` [GPL,LGPL]
           then ["install -D -m644 " ++ licenseFile cabal ++
                     " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1" ]
           else [])
