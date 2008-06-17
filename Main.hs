@@ -13,7 +13,7 @@
 -- Portability:
 --
 
--- TODO: libraries should be "haskell-$packagefoo"
+-- TODO: LICENSE file might be missing.
 
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Configuration
@@ -290,13 +290,17 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
                     Just l  -> extraLibs (libBuildInfo l)
 
     canonicalise k = case M.lookup k translationTable of
-        Nothing -> trace "WARNING: this library depends on a C library we do not know the pacman name for. Check the C library names in the generated PKGBUILD File" $ map toLower k
+        Nothing -> trace ("WARNING: this library depends on a C library we do not know the pacman name for (" ++ map toLower k ++ ") . Check the C library names in the generated PKGBUILD File") $ map toLower k
         Just s  -> s
 
     -- known pacman packages for C libraries we use:
     translationTable = M.fromList
         [("curses",     "ncurses")
         ,("bz2",        "bzip2")
+        ,("png",        "libpng")
+        ,("pthread",        "")
+        ,("freetype",        "freetype2")
+        ,("jpeg",        "libjpeg")
         ,("z",          "zlib")
         ,("Imlib2",     "imlib2")
         ,("cblas",      "blas")
@@ -309,6 +313,9 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("SDL",        "sdl")
         ,("ldap",       "libldap")
         ,("pcap",        "libpcap")
+        ,("ssl",         "openssl")
+        ,("wx",           "wxgtk")
+        ,("alut",           "freealut")
         ,("crypto",      "openssl")
         ,("xrandr",      "libxrandr")
         ,("x11",      "libx11")
