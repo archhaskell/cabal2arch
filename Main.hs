@@ -313,6 +313,9 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("x11",        "libx11")
         ,("xrandr",     "libxrandr")
         ,("xml2",       "libxml2")
+        ,("exif",       "libexif")
+        ,("tiff",       "libtiff")
+        ,("sndfile",    "libsndfile")
 
         ,("pq",         "postgresql")
         ,("ssl",        "openssl")
