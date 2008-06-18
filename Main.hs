@@ -492,7 +492,7 @@ cabal2pkg cabal
     anyClibraries | null libs = ArchList []
                   | otherwise = ArchList libs
        where
-         libs = [ ArchDep (Dependency s AnyVersion) | s <- findCLibs cabal ]
+         libs = [ ArchDep (Dependency s AnyVersion) | s <- nub (findCLibs cabal) ]
 
 --
 -- post install, and pre-remove hooks to run, to sync up ghc-pkg
