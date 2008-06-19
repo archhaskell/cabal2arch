@@ -136,6 +136,10 @@ main =
             die "Unable to tar package"
         Right _ -> putStrLn ("Created " ++ (cwd </> dir <.> "tar.gz"))
 
+   -- RSS generation help
+   writeFile "title" (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
+   writeFile "desc"  (show $ arch_pkgdesc pkgbuild)
+
 ------------------------------------------------------------------------
 
 -- | Given an abstract pkgbuild, download the source bundle,
@@ -316,6 +320,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("exif",       "libexif")
         ,("tiff",       "libtiff")
         ,("sndfile",    "libsndfile")
+        ,("fftw3",      "fftw")
 
         ,("pq",         "postgresql")
         ,("ssl",        "openssl")
