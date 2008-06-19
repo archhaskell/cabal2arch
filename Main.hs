@@ -329,6 +329,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("odbc",       "unixodbc")
         ,("z",          "zlib")
         ,("curses",     "ncurses")
+        ,("xslt",       "libxslt")
 
         ,("pthread",     "")
         ,("m",          "")
