@@ -13,7 +13,8 @@
 -- Portability:
 --
 
--- TODO: LICENSE file might be missing.
+-- TODO: if build-type: Configure, accurate C library dependecies
+-- require downloading the source, and running configure
 
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Configuration
@@ -309,6 +310,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("curl",       "curl")
         ,("freetype",   "freetype2")
         ,("glib",       "glib2")
+        ,("wmflite",    "libwmf")
 
         ,("jpeg",       "libjpeg")
         ,("ldap",       "libldap")
@@ -344,6 +346,7 @@ shouldNotBeLibraries =
     ,"Hedi"
     ,"conjure"
     ,"cpphs"
+    ,"backdropper"
     ]
 
 -- translate some library dependencies to gtk names
