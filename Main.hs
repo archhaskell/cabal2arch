@@ -402,6 +402,8 @@ pkg2doc email pkg = vcat
     <=> disp (arch_arch pkg)
  , text "makedepends"
     <=> disp (arch_makedepends pkg)
+ , text "depends"
+    <=> disp (arch_depends pkg)
  , text "source"
     <=> dispNoQuotes (arch_source pkg)
  , case arch_install pkg of
@@ -454,6 +456,10 @@ cabal2pkg cabal
                             `mappend`
                          anyClibraries
 
+    , arch_depends = ArchList [ArchDep (Dependency "gmp" AnyVersion)]
+                    `mappend`
+                    anyClibraries
+
     -- need the dependencies of all flags that are on by default, for all libraries and executables
 
     -- Hackage programs only need their own source to build
@@ -463,7 +469,7 @@ cabal2pkg cabal
 
     , arch_build =
         [ "cd $startdir/src/" </> name <-> display vers
-        , "runhaskell Setup configure --prefix=/usr || return 1"
+        , "runhaskell Setup configure --enable-executable-stripping --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
         ] ++
 
