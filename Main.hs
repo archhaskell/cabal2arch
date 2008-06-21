@@ -15,6 +15,9 @@
 
 -- TODO: if build-type: Configure, accurate C library dependecies
 -- require downloading the source, and running configure
+--
+-- C libraries are dynamicall linked, should be listed in depends,
+-- rather than makedepends
 
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Configuration
