@@ -226,7 +226,7 @@ corePackages =
     ,Dependency "template-haskell" (ThisVersion (Version  [2,2,0,0] []))
     ,Dependency "time"             (ThisVersion (Version  [1,1,2,0] []))
     ,Dependency "unix"             (ThisVersion (Version  [2,3,0,0] []))
-    ,Dependency "xtml"             (ThisVersion (Version  [3000,0,2,1] []))
+    ,Dependency "xhtml"            (ThisVersion (Version  [3000,0,2,1] []))
 
 {-
 ALUT-2.1.0.0        cgi-3001.1.5.1       network-2.1.0.0       regex-base-0.72.0.1
@@ -402,8 +402,10 @@ pkg2doc email pkg = vcat
     <=> disp (arch_arch pkg)
  , text "makedepends"
     <=> disp (arch_makedepends pkg)
- , text "depends"
-    <=> disp (arch_depends pkg)
+ , case arch_depends pkg of
+        ArchList [] -> empty
+        _           -> text "depends" <=> disp (arch_depends pkg)
+ , text "options" <=> disp (arch_options pkg)
  , text "source"
     <=> dispNoQuotes (arch_source pkg)
  , case arch_install pkg of
@@ -456,9 +458,13 @@ cabal2pkg cabal
                             `mappend`
                          anyClibraries
 
-    , arch_depends = ArchList [ArchDep (Dependency "gmp" AnyVersion)]
-                    `mappend`
-                    anyClibraries
+    , arch_depends = 
+        if not (isLibrary)
+                    then
+                        ArchList [ArchDep (Dependency "gmp" AnyVersion)]
+                                        `mappend`
+                                        anyClibraries
+                    else ArchList []
 
     -- need the dependencies of all flags that are on by default, for all libraries and executables
 
@@ -469,7 +475,7 @@ cabal2pkg cabal
 
     , arch_build =
         [ "cd $startdir/src/" </> name <-> display vers
-        , "runhaskell Setup configure --enable-executable-stripping --prefix=/usr || return 1"
+        , "runhaskell Setup configure --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
         ] ++
 
@@ -624,9 +630,21 @@ data PkgBuild =
         -- file should reside in the same directory as the PKGBUILD, and will be copied
         -- into the package by makepkg. It does not need to be included in the source
         -- array (e.g.  install=pkgname.install).
-
+            --
+    , arch_options      :: ArchList ArchOptions
+        -- ^
+        -- This array allows you to override some of makepkg´s default behavior when
+        -- building packages. To set an option, just include the option name in the
+        -- options array. To reverse the default behavior, place an “!” at the front of
+        -- the option. Only specify the options you specifically want to override, the
+        -- rest will be taken from makepkg.conf(5).  NOTE: force is a special option only
+        -- used in a PKGBUILD(5), do not use it unless you know what you are doing.
 
     }
+    deriving (Show, Eq)
+
+data ArchOptions
+    = Strip
     deriving (Show, Eq)
 
 --
@@ -650,6 +668,7 @@ emptyPkgBuild =
         -- sha1sums=('a08670e4c749850714205f425cb460ed5a0a56b2')
     , arch_build       = []
     , arch_install     = Nothing  -- executable
+    , arch_options     = ArchList [Strip]
     }
   where
     e = emptyPackageDescription
@@ -659,6 +678,10 @@ emptyPkgBuild =
 
 newtype ArchDep = ArchDep Dependency
   deriving (Eq,Show)
+
+instance Text ArchOptions where
+  disp Strip = text "strip"
+  parse = undefined
 
 -- the PKGBUILD version spec is less expressive than cabal, we can't
 -- really handle unions or intersections well yet.
