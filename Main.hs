@@ -372,6 +372,7 @@ gtkLibs =
     ,"cairo"
     ,"glib"
     ,"gtk"
+    ,"mozembed"
     ,"svgcairo"
     ]
 
