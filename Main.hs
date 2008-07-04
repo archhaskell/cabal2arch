@@ -348,6 +348,7 @@ shouldNotBeLibraries =
     ,"distract"
     ,"Hedi"
     ,"conjure"
+    ,"clevercss"
     ,"cpphs"
     ,"backdropper"
     ]
