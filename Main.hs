@@ -335,6 +335,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("z",          "zlib")
         ,("curses",     "ncurses")
         ,("xslt",       "libxslt")
+        ,("csound64",   "csound5")
 
         ,("pthread",     "")
         ,("m",          "")
@@ -345,7 +346,9 @@ shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
     ,"hscolour"
+    ,"line2pdf"
     ,"distract"
+    ,"derive"
     ,"Hedi"
     ,"conjure"
     ,"clevercss"
