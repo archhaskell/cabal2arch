@@ -325,6 +325,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("exif",       "libexif")
         ,("tiff",       "libtiff")
         ,("sndfile",    "libsndfile")
+        ,("gcrypt",     "libgcrypt")
         ,("fftw3",      "fftw")
 
         ,("pq",         "postgresql")
@@ -345,6 +346,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
+    ,"yi"
+    ,"haddock"
     ,"hscolour"
     ,"line2pdf"
     ,"distract"
@@ -451,25 +454,22 @@ cabal2pkg cabal
 
     -- All Hackage packages depend on GHC at build time
     -- All Haskell libraries are prefixed with "haskell-"
-    , arch_makedepends = (arch_makedepends emptyPkgBuild)
-                            `mappend`
-                         -- Haskell libraries
-                         -- TODO: use a real package spec to compute these names
-                         -- based on what is in Arch.
-                         ArchList
-                             [ ArchDep (Dependency (
-                                   if d /= "gtk2hs" then "haskell" <-> map toLower d else d) v)
-                             | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
-                            `mappend`
-                         anyClibraries
+    , arch_makedepends = my_makedepends
 
-    , arch_depends = 
-        if not (isLibrary)
-                    then
-                        ArchList [ArchDep (Dependency "gmp" AnyVersion)]
-                                        `mappend`
-                                        anyClibraries
-                    else ArchList []
+    , arch_depends = trace (show (isLibrary,hasLibrary)) $ 
+
+        (if not (isLibrary)
+            then
+                ArchList [ArchDep (Dependency "gmp" AnyVersion)]
+                                `mappend`
+                                anyClibraries
+            else ArchList [])
+        `mappend`
+            -- libraries have 'register-time' dependencies on
+            -- their dependent Haskell libraries.
+            --
+           (if hasLibrary then my_makedepends
+                          else ArchList [])
 
     -- need the dependencies of all flags that are on by default, for all libraries and executables
 
@@ -514,6 +514,20 @@ cabal2pkg cabal
     archName = map toLower (if isLibrary then "haskell-" ++ name else name)
     name     = pkgName (package cabal)
     vers     = pkgVersion (package cabal)
+
+    -- build time dependencies
+    my_makedepends =
+     (arch_makedepends emptyPkgBuild)
+        `mappend`
+     -- Haskell libraries
+     -- TODO: use a real package spec to compute these names
+     -- based on what is in Arch.
+     ArchList
+         [ ArchDep (Dependency (
+               if d /= "gtk2hs" then "haskell" <-> map toLower d else d) v)
+         | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
+        `mappend`
+     anyClibraries
 
     hasLibrary = isJust (library cabal)
     isLibrary  = isJust (library cabal) -- && null (executables cabal)
