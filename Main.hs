@@ -314,6 +314,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("freetype",   "freetype2")
         ,("glib",       "glib2")
         ,("wmflite",    "libwmf")
+        ,("il",    "devil")
 
         ,("jpeg",       "libjpeg")
         ,("ldap",       "libldap")
@@ -337,6 +338,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("curses",     "ncurses")
         ,("xslt",       "libxslt")
         ,("csound64",   "csound5")
+        ,("uuid",       "e2fsprogs")
 
         ,("pthread",     "")
         ,("m",          "")
@@ -456,8 +458,7 @@ cabal2pkg cabal
     -- All Haskell libraries are prefixed with "haskell-"
     , arch_makedepends = my_makedepends
 
-    , arch_depends = trace (show (isLibrary,hasLibrary)) $ 
-
+    , arch_depends =
         (if not (isLibrary)
             then
                 ArchList [ArchDep (Dependency "gmp" AnyVersion)]
@@ -679,7 +680,13 @@ emptyPkgBuild =
     , arch_arch        = ArchList [Arch_X86, Arch_X86_64]
     , arch_url         = homepage e
     , arch_license     = ArchList [license e]
-    , arch_makedepends = ArchList [(ArchDep (Dependency "ghc" AnyVersion))]
+
+    -- everything depends on ghc and Cabal 1.4.x
+    , arch_makedepends = ArchList
+        [(ArchDep (Dependency "ghc"    AnyVersion))
+        ,(ArchDep (Dependency "Cabal" (ThisVersion (Version  [1,4,0,1] []))))
+        ]
+
         -- makedepends=('ghc>=6.6') ?
     , arch_depends     = ArchList []
     , arch_source      = ArchList []
