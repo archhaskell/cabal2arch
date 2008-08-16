@@ -684,7 +684,7 @@ emptyPkgBuild =
     -- everything depends on ghc and Cabal 1.4.x
     , arch_makedepends = ArchList
         [(ArchDep (Dependency "ghc"    AnyVersion))
-        ,(ArchDep (Dependency "haskell-cabal" (ThisVersion (Version  [1,4,0,1] []))))
+        ,(ArchDep (Dependency "haskell-cabal" (LaterVersion (Version  [1,4,0,0] []))))
         ]
 
         -- makedepends=('ghc>=6.6') ?
