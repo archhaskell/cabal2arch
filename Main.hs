@@ -359,6 +359,7 @@ shouldNotBeLibraries =
     ,"clevercss"
     ,"cpphs"
     ,"backdropper"
+    ,"gtk2hs"
     ]
 
 -- translate some library dependencies to gtk names
@@ -525,7 +526,8 @@ cabal2pkg cabal
      -- based on what is in Arch.
      ArchList
          [ ArchDep (Dependency (
-               if d /= "gtk2hs" then "haskell" <-> map toLower d else d) v)
+               if d `notElem` shouldNotBeLibraries
+                    then "haskell" <-> map toLower d else d) v)
          | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
         `mappend`
      anyClibraries
@@ -684,7 +686,8 @@ emptyPkgBuild =
     -- everything depends on ghc and Cabal 1.4.x
     , arch_makedepends = ArchList
         [(ArchDep (Dependency "ghc"    AnyVersion))
-        ,(ArchDep (Dependency "haskell-cabal" (LaterVersion (Version  [1,4,0,0] []))))
+        ,(ArchDep (Dependency "haskell-cabal" AnyVersion))
+--        ,(ArchDep (Dependency "haskell-cabal" (LaterVersion (Version  [1,4,0,0] []))))
         ]
 
         -- makedepends=('ghc>=6.6') ?
