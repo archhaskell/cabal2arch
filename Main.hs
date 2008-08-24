@@ -87,7 +87,7 @@ main =
    email     <- do
        r <- getEnvMaybe "ARCH_HASKELL" 
        case r of
-            Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contat you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
+            Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
                           return []
             Just s  -> return s
 
