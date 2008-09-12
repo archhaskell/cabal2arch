@@ -339,6 +339,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("xslt",       "libxslt")
         ,("csound64",   "csound5")
         ,("uuid",       "e2fsprogs")
+        ,("doublefann", "fann")
 
         ,("pthread",     "")
         ,("m",          "")
