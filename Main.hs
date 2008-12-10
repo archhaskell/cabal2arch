@@ -19,7 +19,9 @@
 -- C libraries are dynamicall linked, should be listed in depends,
 -- rather than makedepends
 
+import Distribution.Package
 import Distribution.PackageDescription
+import Distribution.PackageDescription.Parse
 import Distribution.PackageDescription.Configuration
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
@@ -189,44 +191,44 @@ removeCoreFrom (x@(Dependency n _):xs) =
 --
 corePackages :: [Dependency]
 corePackages =
-    [Dependency "ALUT"             (ThisVersion (Version  [2,1,0,0] []))
-    ,Dependency "Cabal"            (ThisVersion (Version  [1,2,3,0] []))
-    ,Dependency "GLUT"             (ThisVersion (Version  [2,1,1,1] []))
-    ,Dependency "HUnit"            (ThisVersion (Version  [1,2,0,0] []))
-    ,Dependency "OpenAL"           (ThisVersion (Version  [1,3,1,1] []))
-    ,Dependency "QuickCheck"       (ThisVersion (Version  [1,1,0,0] []))
-    ,Dependency "array"            (ThisVersion (Version  [0,1,0,0] []))
-    ,Dependency "base"             (ThisVersion (Version  [3,0,1,0] []))
-    ,Dependency "bytestring"       (ThisVersion (Version  [0,9,0,1] []))
-    ,Dependency "cgi"              (ThisVersion (Version  [3001,1,5,1] []))
-    ,Dependency "ghc"              (AnyVersion)
-    ,Dependency "containers"       (ThisVersion (Version  [0,1,0,1] []))
-    ,Dependency "directory"        (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "fgl"              (ThisVersion (Version  [5,4,1,1] []))
-    ,Dependency "filepath"         (ThisVersion (Version  [1,1,0,0] []))
-    ,Dependency "haskell-src"      (ThisVersion (Version  [1,0,1,1] []))
-    ,Dependency "haskell98"        (ThisVersion (Version  [1,0,1,0] []))
-    ,Dependency "hpc"              (ThisVersion (Version  [0,5,0,0] []))
-    ,Dependency "html"             (ThisVersion (Version  [1,0,1,1] []))
-    ,Dependency "mtl"              (ThisVersion (Version  [1,1,0,1] []))
-    ,Dependency "network"          (ThisVersion (Version  [2,1,0,0] []))
-    ,Dependency "old-locale"       (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "old-time"         (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "packedstring"     (ThisVersion (Version  [0,1,0,0] []))
-    ,Dependency "parallel"         (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "parsec"           (ThisVersion (Version  [2,1,0,0] []))
-    ,Dependency "pretty"           (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "process"          (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "random"           (ThisVersion (Version  [1,0,0,0] []))
-    ,Dependency "readline"         (ThisVersion (Version  [1,0,1,0] []))
-    ,Dependency "regex-base"       (ThisVersion (Version  [0,72,0,1] []))
-    ,Dependency "regex-compat"     (ThisVersion (Version  [0,71,0,1] []))
-    ,Dependency "regex-posix"      (ThisVersion (Version  [0,72,0,2] []))
-    ,Dependency "stm"              (ThisVersion (Version  [2,1,1,0] []))
-    ,Dependency "template-haskell" (ThisVersion (Version  [2,2,0,0] []))
-    ,Dependency "time"             (ThisVersion (Version  [1,1,2,0] []))
-    ,Dependency "unix"             (ThisVersion (Version  [2,3,0,0] []))
-    ,Dependency "xhtml"            (ThisVersion (Version  [3000,0,2,1] []))
+    [Dependency (PackageName "ALUT")             (ThisVersion (Version  [2,1,0,0] []))
+    ,Dependency (PackageName "Cabal")            (ThisVersion (Version  [1,2,3,0] []))
+    ,Dependency (PackageName "GLUT")             (ThisVersion (Version  [2,1,1,1] []))
+    ,Dependency (PackageName "HUnit")            (ThisVersion (Version  [1,2,0,0] []))
+    ,Dependency (PackageName "OpenAL")           (ThisVersion (Version  [1,3,1,1] []))
+    ,Dependency (PackageName "QuickCheck")       (ThisVersion (Version  [1,1,0,0] []))
+    ,Dependency (PackageName "array")            (ThisVersion (Version  [0,1,0,0] []))
+    ,Dependency (PackageName "base")             (ThisVersion (Version  [3,0,1,0] []))
+    ,Dependency (PackageName "bytestring")       (ThisVersion (Version  [0,9,0,1] []))
+    ,Dependency (PackageName "cgi")              (ThisVersion (Version  [3001,1,5,1] []))
+    ,Dependency (PackageName "ghc")              (AnyVersion)
+    ,Dependency (PackageName "containers")       (ThisVersion (Version  [0,1,0,1] []))
+    ,Dependency (PackageName "directory")        (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "fgl")              (ThisVersion (Version  [5,4,1,1] []))
+    ,Dependency (PackageName "filepath")         (ThisVersion (Version  [1,1,0,0] []))
+    ,Dependency (PackageName "haskell-src")      (ThisVersion (Version  [1,0,1,1] []))
+    ,Dependency (PackageName "haskell98")        (ThisVersion (Version  [1,0,1,0] []))
+    ,Dependency (PackageName "hpc")              (ThisVersion (Version  [0,5,0,0] []))
+    ,Dependency (PackageName "html")             (ThisVersion (Version  [1,0,1,1] []))
+    ,Dependency (PackageName "mtl")              (ThisVersion (Version  [1,1,0,1] []))
+    ,Dependency (PackageName "network")          (ThisVersion (Version  [2,1,0,0] []))
+    ,Dependency (PackageName "old-locale")       (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "old-time")         (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "packedstring")     (ThisVersion (Version  [0,1,0,0] []))
+    ,Dependency (PackageName "parallel")         (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "parsec")           (ThisVersion (Version  [2,1,0,0] []))
+    ,Dependency (PackageName "pretty")           (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "process")          (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "random")           (ThisVersion (Version  [1,0,0,0] []))
+    ,Dependency (PackageName "readline")         (ThisVersion (Version  [1,0,1,0] []))
+    ,Dependency (PackageName "regex-base")       (ThisVersion (Version  [0,72,0,1] []))
+    ,Dependency (PackageName "regex-compat")     (ThisVersion (Version  [0,71,0,1] []))
+    ,Dependency (PackageName "regex-posix")      (ThisVersion (Version  [0,72,0,2] []))
+    ,Dependency (PackageName "stm")              (ThisVersion (Version  [2,1,1,0] []))
+    ,Dependency (PackageName "template-haskell") (ThisVersion (Version  [2,2,0,0] []))
+    ,Dependency (PackageName "time")             (ThisVersion (Version  [1,1,2,0] []))
+    ,Dependency (PackageName "unix")             (ThisVersion (Version  [2,3,0,0] []))
+    ,Dependency (PackageName "xhtml")            (ThisVersion (Version  [3000,0,2,1] []))
 
 {-
 ALUT-2.1.0.0        cgi-3001.1.5.1       network-2.1.0.0       regex-base-0.72.0.1
@@ -339,15 +341,14 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("xslt",       "libxslt")
         ,("csound64",   "csound5")
         ,("uuid",       "e2fsprogs")
-        ,("doublefann", "fann")
 
         ,("pthread",     "")
         ,("m",          "")
         ]
         -- atlas
 
-shouldNotBeLibraries :: [String]
-shouldNotBeLibraries =
+shouldNotBeLibraries :: [PackageName]
+shouldNotBeLibraries = map PackageName
     ["xmonad"
     ,"yi"
     ,"haddock"
@@ -367,7 +368,7 @@ shouldNotBeLibraries =
 --
 gtk2hsIfy :: [Dependency] -> [Dependency]
 gtk2hsIfy [] = []
-gtk2hsIfy xs | foundSome = Dependency "gtk2hs" AnyVersion :
+gtk2hsIfy xs | foundSome = Dependency (PackageName "gtk2hs") AnyVersion :
                            [ v | v@(Dependency n _) <- xs
                            , n `notElem` gtkLibs ]
              | otherwise = xs
@@ -377,8 +378,8 @@ gtk2hsIfy xs | foundSome = Dependency "gtk2hs" AnyVersion :
         unDep (Dependency n _) = n
 
 
-gtkLibs :: [String]
-gtkLibs =
+gtkLibs :: [PackageName]
+gtkLibs = map PackageName
     ["glade" -- guihaskell
     ,"cairo"
     ,"glib"
@@ -446,7 +447,7 @@ cabal2pkg cabal
   (emptyPkgBuild
     { arch_pkgname = archName
     , arch_pkgver  = vers
-    , arch_url     = "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++name
+    , arch_url     = "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++display name
  --       else homepage cabal
     , arch_pkgdesc = synopsis cabal
     , arch_license =
@@ -463,7 +464,7 @@ cabal2pkg cabal
     , arch_depends =
         (if not (isLibrary)
             then
-                ArchList [ArchDep (Dependency "gmp" AnyVersion)]
+                ArchList [ArchDep (Dependency (PackageName "gmp") AnyVersion)]
                                 `mappend`
                                 anyClibraries
             else ArchList [])
@@ -479,10 +480,10 @@ cabal2pkg cabal
     -- Hackage programs only need their own source to build
     , arch_source  = ArchList . return $
           "http://hackage.haskell.org/packages/archive/"
-       ++ (name </> display vers </> name <-> display vers <.> "tar.gz")
+       ++ (display name </> display vers </> display name <-> display vers <.> "tar.gz")
 
     , arch_build =
-        [ "cd $startdir/src/" </> name <-> display vers
+        [ "cd $startdir/src/" </> display name <-> display vers
         , "runhaskell Setup configure --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
         ] ++
@@ -514,7 +515,7 @@ cabal2pkg cabal
     )
 
   where
-    archName = map toLower (if isLibrary then "haskell-" ++ name else name)
+    archName = map toLower (if isLibrary then "haskell-" ++ display name else display name)
     name     = pkgName (package cabal)
     vers     = pkgVersion (package cabal)
 
@@ -526,21 +527,21 @@ cabal2pkg cabal
      -- TODO: use a real package spec to compute these names
      -- based on what is in Arch.
      ArchList
-         [ ArchDep (Dependency (
+         [ ArchDep (Dependency (PackageName $
                if d `notElem` shouldNotBeLibraries
-                    then "haskell" <-> map toLower d else d) v)
+                    then "haskell" <-> map toLower (display d) else display d) v)
          | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
         `mappend`
      anyClibraries
 
     hasLibrary = isJust (library cabal)
     isLibrary  = isJust (library cabal) -- && null (executables cabal)
-                    && map toLower name `notElem` shouldNotBeLibraries
+                    && map toLower (display name) `notElem` shouldNotBeLibraries
 
     anyClibraries | null libs = ArchList []
                   | otherwise = ArchList libs
        where
-         libs = [ ArchDep (Dependency s AnyVersion) | s <- nub (findCLibs cabal) ]
+         libs = [ ArchDep (Dependency (PackageName s) AnyVersion) | s <- nub (findCLibs cabal) ]
 
 --
 -- post install, and pre-remove hooks to run, to sync up ghc-pkg
@@ -676,7 +677,7 @@ data ArchOptions
 emptyPkgBuild :: PkgBuild
 emptyPkgBuild =
   PkgBuild
-    { arch_pkgname     = pkgName (package e)
+    { arch_pkgname     = display $ pkgName (package e)
     , arch_pkgver      = pkgVersion (package e)
     , arch_pkgrel      = 1
     , arch_pkgdesc     = synopsis e
@@ -686,8 +687,8 @@ emptyPkgBuild =
 
     -- everything depends on ghc and Cabal 1.4.x
     , arch_makedepends = ArchList
-        [(ArchDep (Dependency "ghc"    AnyVersion))
-        ,(ArchDep (Dependency "haskell-cabal" AnyVersion))
+        [(ArchDep (Dependency (PackageName "ghc")    AnyVersion))
+        ,(ArchDep (Dependency (PackageName "haskell-cabal") AnyVersion))
 --        ,(ArchDep (Dependency "haskell-cabal" (LaterVersion (Version  [1,4,0,0] []))))
         ]
 
@@ -718,7 +719,7 @@ instance Text ArchOptions where
 
 instance Text ArchDep where
   disp (ArchDep (Dependency name ver)) =
-    text name <> mydisp ver
+    text (display name) <> mydisp ver
    where
      --  >= (greater than or equal to), <= (less than or
      --  equal to), = (equal to), > (greater than), or <
