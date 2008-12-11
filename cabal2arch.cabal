@@ -1,5 +1,5 @@
 name:               cabal2arch
-version:            0.4
+version:            0.4.1
 homepage:           http://code.haskell.org/~dons/code/cabal2arch
 synopsis:           Create Arch Linux packages from Cabal packages
 description:        Create Arch Linux packages from Cabal packages
@@ -20,7 +20,7 @@ executable cabal2arch
 
     if flag(small_base)
         build-depends:      
-            base >= 3,
+            base == 3.*,
             pretty,
             process,
             directory,

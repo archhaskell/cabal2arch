@@ -65,7 +65,7 @@ main =
  bracket
    -- We do all our work in a temp directory
   (do cwd  <- getCurrentDirectory
-      etmp <- readProcess "mktemp" ["-d"] []
+      etmp <- myReadProcess "mktemp" ["-d"] []
       case etmp of
         Left _  -> die "Unable to create temp directory"
         Right d -> do
@@ -145,6 +145,7 @@ main =
    -- RSS generation help
    writeFile "title" (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
    writeFile "desc"  (show $ arch_pkgdesc pkgbuild)
+   writeFile "link"  (show $ arch_url pkgbuild)
 
 ------------------------------------------------------------------------
 
@@ -202,6 +203,7 @@ corePackages =
     ,Dependency (PackageName "bytestring")       (ThisVersion (Version  [0,9,0,1] []))
     ,Dependency (PackageName "cgi")              (ThisVersion (Version  [3001,1,5,1] []))
     ,Dependency (PackageName "ghc")              (AnyVersion)
+    ,Dependency (PackageName "ghc-prim")         (AnyVersion)
     ,Dependency (PackageName "containers")       (ThisVersion (Version  [0,1,0,1] []))
     ,Dependency (PackageName "directory")        (ThisVersion (Version  [1,0,0,0] []))
     ,Dependency (PackageName "fgl")              (ThisVersion (Version  [5,4,1,1] []))
@@ -341,6 +343,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("xslt",       "libxslt")
         ,("csound64",   "csound5")
         ,("uuid",       "e2fsprogs")
+        ,("doublefann", "fann")
+        ,("ev",         "libev")
 
         ,("pthread",     "")
         ,("m",          "")
@@ -384,6 +388,7 @@ gtkLibs = map PackageName
     ,"cairo"
     ,"glib"
     ,"gtk"
+    ,"gtkglext"
     ,"mozembed"
     ,"svgcairo"
     ]
@@ -832,12 +837,12 @@ getEnvMaybe name = handle (const $ return Nothing) (Just `fmap` getEnv name)
 --
 -- Strict process reading 
 --
-readProcess :: FilePath                              -- ^ command to run
+myReadProcess :: FilePath                              -- ^ command to run
             -> [String]                              -- ^ any arguments
             -> String                                -- ^ standard input
             -> IO (Either (ExitCode,String,String) String)  -- ^ either the stdout, or an exitcode and any output
 
-readProcess cmd args input = C.handle (return . handler) $ do
+myReadProcess cmd args input = C.handle (return . handler) $ do
     (inh,outh,errh,pid) <- runInteractiveProcess cmd args Nothing Nothing
 
     output  <- hGetContents outh
