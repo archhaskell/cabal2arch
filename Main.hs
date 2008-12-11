@@ -135,7 +135,7 @@ main =
 
    setCurrentDirectory cwd
 
-   tarred <- readProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
+   tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
    case tarred of
         Left (_,s,_)  -> do
             hPutStrLn stderr s
@@ -159,7 +159,7 @@ getMD5 :: PkgBuild -> IO PkgBuild
 getMD5 pkg@(PkgBuild { arch_source = ArchList [url] }) = do
    hPutStrLn stderr $ "Fetching " ++ url
    hFlush stderr
-   eres <- readProcess "wget" [url] []
+   eres <- myReadProcess "wget" [url] []
    case eres of
        Left (_,s,_) -> do
             hPutStrLn stderr s
@@ -269,7 +269,7 @@ findCabalFile cwd tmp = do
    -- download url to .cabal
    case epath of
        Left url -> do
-        eres <- readProcess "wget" [url] []
+        eres <- myReadProcess "wget" [url] []
         case eres of
            Left (_,s,_) -> do
                 hPutStrLn stderr s
@@ -351,8 +351,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ]
         -- atlas
 
-shouldNotBeLibraries :: [PackageName]
-shouldNotBeLibraries = map PackageName
+shouldNotBeLibraries :: [String]
+shouldNotBeLibraries =
     ["xmonad"
     ,"yi"
     ,"haddock"
@@ -535,7 +535,7 @@ cabal2pkg cabal
          [ ArchDep (Dependency (PackageName $
                if d `notElem` shouldNotBeLibraries
                     then "haskell" <-> map toLower (display d) else display d) v)
-         | Dependency d v <- gtk2hsIfy (buildDepends cabal) ]
+         | Dependency (PackageName d) v <- gtk2hsIfy (buildDepends cabal) ]
         `mappend`
      anyClibraries
 
