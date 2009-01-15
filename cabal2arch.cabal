@@ -20,7 +20,7 @@ executable cabal2arch
 
     if flag(small_base)
         build-depends:      
-            base == 3.*,
+            base < 4,
             pretty,
             process,
             directory,
@@ -31,7 +31,7 @@ executable cabal2arch
             base < 3
 
     build-depends:
-            Cabal   == 1.6.*,
+            Cabal   > 1.6,
             pureMD5 >= 0.2.1,
             filepath
 
