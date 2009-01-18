@@ -363,6 +363,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
+    ,"libraries"
     ,"yi"
     ,"haddock"
     ,"hscolour"
@@ -375,6 +376,7 @@ shouldNotBeLibraries =
     ,"cpphs"
     ,"backdropper"
     ,"gtk2hs"
+    ,"darcs"
     ]
 
 -- translate some library dependencies to gtk names
@@ -547,6 +549,8 @@ cabal2pkg cabal
          | Dependency (PackageName d) v <- gtk2hsIfy (buildDepends cabal) ]
         `mappend`
      anyClibraries
+
+    -- TODO: need a 'nub' in here.
 
     hasLibrary = isJust (library cabal)
     isLibrary  = isJust (library cabal) -- && null (executables cabal)
