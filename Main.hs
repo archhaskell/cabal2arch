@@ -135,6 +135,7 @@ main =
 
    setCurrentDirectory cwd
 
+   system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
    tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
    case tarred of
         Left (_,s,_)  -> do
@@ -363,7 +364,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
-    ,"libraries"
+    ,"lambdabot"
     ,"yi"
     ,"haddock"
     ,"hscolour"
