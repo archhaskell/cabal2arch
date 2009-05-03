@@ -164,7 +164,8 @@ getMD5 pkg@(PkgBuild { arch_source = ArchList [url] }) = do
    case eres of
        Left (_,s,_) -> do
             hPutStrLn stderr s
-            die $ "Couldn't download package: " ++ show url
+            hPutStrLn stderr $ "Couldn't download package: " ++ show url
+            return pkg
        Right _ -> do
             src <- B.readFile (takeBaseName url <.> "gz")
             let !md5sum = show (md5 src)
