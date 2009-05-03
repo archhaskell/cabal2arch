@@ -199,49 +199,59 @@ removeCoreFrom (x@(Dependency n _):xs) =
 corePackages :: [Dependency]
 corePackages =
     [
---   Dependency (PackageName "ALUT")             (ThisVersion (Version  [2,1,0,0] []))
-     Dependency (PackageName "array")            (ThisVersion (Version  [0,2,0,0] []))
+     Dependency (PackageName "Cabal")            (ThisVersion (Version  [1,6,0,1] []))
+    ,Dependency (PackageName "HUnit")            (ThisVersion (Version  [1,2,0,3] []))
+    ,Dependency (PackageName "QuickCheck")       (ThisVersion (Version  [1,2,0,0] []))
+    ,Dependency (PackageName "array")            (ThisVersion (Version  [0,2,0,0] []))
     ,Dependency (PackageName "base")             (ThisVersion (Version  [3,0,3,0] []))
     ,Dependency (PackageName "bytestring")       (ThisVersion (Version  [0,9,1,4] []))
-    ,Dependency (PackageName "Cabal")            (ThisVersion (Version  [1,6,0,1] []))
---  ,Dependency (PackageName "cgi")              (ThisVersion (Version  [3001,1,5,1] []))
     ,Dependency (PackageName "containers")       (ThisVersion (Version  [0,2,0,0] []))
     ,Dependency (PackageName "directory")        (ThisVersion (Version  [1,0,0,2] []))
+
+    ,Dependency (PackageName "dph-base")           (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-par" )           (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-prim-interface") (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-prim-par"   )    (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-prim-seq"   )    (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-seq"        )    (ThisVersion (Version [ 0,3 ] [] ))
+
     ,Dependency (PackageName "editline")         (AnyVersion)
-    ,Dependency (PackageName "extensible-exceptions")         (AnyVersion)
---  ,Dependency (PackageName "fgl")              (ThisVersion (Version  [5,4,1,1] [])) -- gone
     ,Dependency (PackageName "filepath")         (ThisVersion (Version  [1,1,0,1] []))
+    ,Dependency (PackageName "ghc")              (AnyVersion)
     ,Dependency (PackageName "ghc-prim")         (AnyVersion)
---  ,Dependency (PackageName "GLUT")             (ThisVersion (Version  [2,1,1,1] []))
-    ,Dependency (PackageName "haskell98")        (ThisVersion (Version  [1,0,1,0] []))
     ,Dependency (PackageName "haskell-src")      (ThisVersion (Version  [1,0,1,3] []))
+    ,Dependency (PackageName "haskell98")        (ThisVersion (Version  [1,0,1,0] []))
     ,Dependency (PackageName "hpc")              (ThisVersion (Version  [0,5,0,2] []))
     ,Dependency (PackageName "html")             (ThisVersion (Version  [1,0,1,2] []))
-    ,Dependency (PackageName "HUnit")            (ThisVersion (Version  [1,2,0,3] []))
     ,Dependency (PackageName "integer")          (ThisVersion (Version  [0,1,0,0] []))
     ,Dependency (PackageName "mtl")              (ThisVersion (Version  [1,1,0,2] []))
     ,Dependency (PackageName "network")          (ThisVersion (Version  [2,2,0,1] []))
     ,Dependency (PackageName "old-locale")       (ThisVersion (Version  [1,0,0,1] []))
     ,Dependency (PackageName "old-time")         (ThisVersion (Version  [1,0,0,1] []))
---    ,Dependency (PackageName "OpenAL")           (ThisVersion (Version  [1,3,1,1] [])) -- gone
     ,Dependency (PackageName "packedstring")     (ThisVersion (Version  [0,1,0,1] []))
     ,Dependency (PackageName "parallel")         (ThisVersion (Version  [1,1,0,0] []))
     ,Dependency (PackageName "parsec")           (ThisVersion (Version  [2,1,0,0] []))
     ,Dependency (PackageName "pretty")           (ThisVersion (Version  [1,0,1,0] []))
     ,Dependency (PackageName "process")          (ThisVersion (Version  [1,0,1,0] []))
-    ,Dependency (PackageName "QuickCheck")       (ThisVersion (Version  [1,2,0,0] []))
     ,Dependency (PackageName "random")           (ThisVersion (Version  [1,0,0,1] []))
---    ,Dependency (PackageName "readline")         (ThisVersion (Version  [1,0,1,0] []))
     ,Dependency (PackageName "regex-base")       (ThisVersion (Version  [0,72,0,2] []))
     ,Dependency (PackageName "regex-compat")     (ThisVersion (Version  [0,71,0,1] []))
     ,Dependency (PackageName "regex-posix")      (ThisVersion (Version  [0,72,0,2] []))
     ,Dependency (PackageName "stm")              (ThisVersion (Version  [2,1,1,2] []))
     ,Dependency (PackageName "syb")              (ThisVersion (Version  [0,1,0,0] []))
     ,Dependency (PackageName "template-haskell") (ThisVersion (Version  [2,3,0,0] []))
-    ,Dependency (PackageName "time")             (ThisVersion (Version  [1,1,2,2] []))
+--     ,Dependency (PackageName "time")             (ThisVersion (Version  [1,1,2,2] []))
     ,Dependency (PackageName "unix")             (ThisVersion (Version  [2,3,1,0] []))
-    ,Dependency (PackageName "ghc")              (AnyVersion)
     ,Dependency (PackageName "xhtml")            (ThisVersion (Version  [3000,2,0,1] []))
+
+
+--   Dependency (PackageName "ALUT")             (ThisVersion (Version  [2,1,0,0] []))
+--  ,Dependency (PackageName "cgi")              (ThisVersion (Version  [3001,1,5,1] []))
+--    ,Dependency (PackageName "extensible-exceptions")         (AnyVersion)
+--  ,Dependency (PackageName "fgl")              (ThisVersion (Version  [5,4,1,1] [])) -- gone
+--  ,Dependency (PackageName "GLUT")             (ThisVersion (Version  [2,1,1,1] []))
+--    ,Dependency (PackageName "OpenAL")           (ThisVersion (Version  [1,3,1,1] [])) -- gone
+--    ,Dependency (PackageName "readline")         (ThisVersion (Version  [1,0,1,0] []))
 
 {-
 ALUT-2.1.0.0        cgi-3001.1.5.1       network-2.1.0.0       regex-base-0.72.0.1
@@ -359,13 +369,22 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 
         ,("pthread",     "")
         ,("m",          "")
+        ,("icui18n",          "icu")
+        ,("icuuc",          "icu")
+        ,("icudata",          "icu")
+
+        ,("netsnmp",        "net-snmp")
+        ,("asound",        "alsa-lib")
         ]
         -- atlas
 
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
+    ,"haskell-platform"
+    ,"xmonad-contrib"
     ,"lambdabot"
+    ,"piet"
     ,"yi"
     ,"haddock"
     ,"hscolour"
@@ -379,6 +398,7 @@ shouldNotBeLibraries =
     ,"backdropper"
     ,"gtk2hs"
     ,"darcs"
+    ,"greencard"
     ]
 
 -- translate some library dependencies to gtk names
@@ -402,6 +422,7 @@ gtkLibs = map PackageName
     ,"glib"
     ,"gtk"
     ,"gtkglext"
+    ,"gtksourceview2"
     ,"mozembed"
     ,"svgcairo"
     ]
