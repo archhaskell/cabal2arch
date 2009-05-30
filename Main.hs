@@ -540,7 +540,7 @@ cabal2pkg cabal
        ++ (display name </> display vers </> display name <-> display vers <.> "tar.gz")
 
     , arch_build =
-        [ "cd $startdir/src/" </> display name <-> display vers
+        [ "cd ${srcdir}/" </> display name <-> display vers
         , "runhaskell Setup configure --prefix=/usr || return 1"
         , "runhaskell Setup build                   || return 1"
         ] ++
@@ -550,16 +550,16 @@ cabal2pkg cabal
            then
             ["runhaskell Setup register   --gen-script || return 1"
             ,"runhaskell Setup unregister --gen-script || return 1"
-            ,"install -D -m744 register.sh   $startdir/pkg/usr/share/haskell/$pkgname/register.sh"
-            , "install    -m744 unregister.sh $startdir/pkg/usr/share/haskell/$pkgname/unregister.sh"
+            ,"install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
+            , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
             ]
            else [])
          ++
-         ["runhaskell Setup copy --destdir=$startdir/pkg || return 1"]
+         ["runhaskell Setup copy --destdir=${pkgdir} || return 1"]
          ++
          (if not (null (licenseFile cabal)) && license cabal `notElem` [GPL,LGPL]
           then ["install -D -m644 " ++ licenseFile cabal ++
-                    " $startdir/pkg/usr/share/licenses/$pkgname/LICENSE || return 1" ]
+                    " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE || return 1" ]
           else [])
 
     -- if its a library:
