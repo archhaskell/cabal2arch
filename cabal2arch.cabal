@@ -20,7 +20,7 @@ executable cabal2arch
 
     if flag(small_base)
         build-depends:      
-            base < 4,
+            base,
             pretty,
             process,
             directory,

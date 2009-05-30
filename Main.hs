@@ -38,8 +38,7 @@ import qualified Data.ByteString.Lazy as B
 
 import Control.Monad
 import Control.Concurrent
-import Control.Exception
-import qualified Control.Exception as C
+import qualified Control.OldException as C
 
 import Data.List
 import Data.Maybe
@@ -62,7 +61,7 @@ import System.Process
 
 main :: IO ()
 main =
- bracket
+ C.bracket
    -- We do all our work in a temp directory
   (do cwd  <- getCurrentDirectory
       etmp <- myReadProcess "mktemp" ["-d"] []
@@ -884,7 +883,7 @@ x <-> y = x ++ "-" ++ y
 
 -- Safe wrapper for getEnv
 getEnvMaybe :: String -> IO (Maybe String)
-getEnvMaybe name = handle (const $ return Nothing) (Just `fmap` getEnv name)
+getEnvMaybe name = C.handle (const $ return Nothing) (Just `fmap` getEnv name)
 
 ------------------------------------------------------------------------
 
