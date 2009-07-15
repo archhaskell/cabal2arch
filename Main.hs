@@ -498,7 +498,9 @@ cabal2pkg cabal
 
     -- All Hackage packages depend on GHC at build time
     -- All Haskell libraries are prefixed with "haskell-"
-    , arch_makedepends = my_makedepends
+    , arch_makedepends = if not hasLibrary
+            then my_makedepends
+            else ArchList [] -- makedepends should not duplicate depends
 
     , arch_depends =
         (if not (isLibrary)
