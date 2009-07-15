@@ -104,7 +104,7 @@ main =
         (Nothing :: Maybe (PackageIndex PackageIdentifier))
         buildOS -- linux/x86_64
         X86_64
-        (CompilerId GHC (Version [6,8,2] []))
+        (CompilerId GHC (Version [6,10,3] []))
 
         -- now constrain it to solve in the context of a modern ghc only
         corePackages
