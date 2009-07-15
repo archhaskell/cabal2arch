@@ -87,7 +87,7 @@ main =
            ["-h"]     -> help
            _          -> return ()
    email     <- do
-       r <- getEnvMaybe "ARCH_HASKELL" 
+       r <- getEnvMaybe "ARCH_HASKELL"
        case r of
             Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
                           return []
@@ -430,9 +430,9 @@ gtkLibs = map PackageName
 ------------------------------------------------------------------------
 -- Parsing and pretty printing:
 
--- 
+--
 -- | Translate an abstract PkgBuild file into a document structure
--- 
+--
 pkg2doc :: String -> PkgBuild -> Doc
 pkg2doc email pkg = vcat
  [ text "# Contributor:"
@@ -609,9 +609,9 @@ install_hook pkgname = unlines
     , "shift"
     , "$op $*" ]
 
--- 
+--
 -- | A data type to represent PKGBUILD files
--- 
+--
 data PkgBuild =
   PkgBuild
     { arch_pkgname :: String
@@ -871,7 +871,7 @@ getEnvMaybe name = handle (const $ return Nothing) (Just `fmap` getEnv name)
 ------------------------------------------------------------------------
 
 --
--- Strict process reading 
+-- Strict process reading
 --
 myReadProcess :: FilePath                              -- ^ command to run
             -> [String]                              -- ^ any arguments
