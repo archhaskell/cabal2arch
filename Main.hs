@@ -215,7 +215,8 @@ corePackages =
     ,Dependency (PackageName "dph-prim-seq"   )    (ThisVersion (Version [ 0,3 ] [] ))
     ,Dependency (PackageName "dph-seq"        )    (ThisVersion (Version [ 0,3 ] [] ))
 
-    ,Dependency (PackageName "editline")         (AnyVersion)
+-- removed:
+--    ,Dependency (PackageName "editline")         (AnyVersion)
     ,Dependency (PackageName "filepath")         (ThisVersion (Version  [1,1,0,1] []))
     ,Dependency (PackageName "ghc")              (AnyVersion)
     ,Dependency (PackageName "ghc-prim")         (AnyVersion)
@@ -369,22 +370,30 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 
         ,("pthread",     "")
         ,("m",          "")
+        ,("db_cxx",          "")
+
         ,("icui18n",          "icu")
         ,("icuuc",          "icu")
         ,("icudata",          "icu")
 
         ,("netsnmp",        "net-snmp")
         ,("asound",        "alsa-lib")
+        ,("ffi",        "libffi")
+        ,("ogg",        "libogg")
+        ,("theora",        "libtheora")
         ]
         -- atlas
 
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
+    ,"l-seed"
+    ,"hspresent"
     ,"haskell-platform"
     ,"xmonad-contrib"
     ,"lambdabot"
     ,"piet"
+    ,"hsffig"
     ,"yi"
     ,"haddock"
     ,"hscolour"
@@ -396,6 +405,7 @@ shouldNotBeLibraries =
     ,"clevercss"
     ,"cpphs"
     ,"backdropper"
+    ,"darcs-beta"
     ,"gtk2hs"
     ,"darcs"
     ,"greencard"
@@ -421,6 +431,7 @@ gtkLibs = map PackageName
     ,"cairo"
     ,"glib"
     ,"gtk"
+    ,"gconf"
     ,"gtkglext"
     ,"gtksourceview2"
     ,"mozembed"
