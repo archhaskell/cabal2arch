@@ -409,6 +409,9 @@ shouldNotBeLibraries =
     ,"gtk2hs"
     ,"darcs"
     ,"greencard"
+    ,"pandoc"
+    ,"pugs-drift"
+    ,"wol"
     ]
 
 -- translate some library dependencies to gtk names
