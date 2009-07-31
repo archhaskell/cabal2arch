@@ -369,6 +369,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 
         ,("pthread",     "")
         ,("m",          "")
+        ,("gl",          "")
+        ,("glu",          "")
         ,("db_cxx",          "")
 
         ,("icui18n",          "icu")
