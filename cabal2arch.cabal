@@ -11,27 +11,18 @@ maintainer:         dons@galois.com
 cabal-version:      >= 1.2
 build-type:         Simple
 
-flag small_base
-    description: Choose the new smaller, split-up base package.
-
 executable cabal2arch
     main-is:            Main.hs
     ghc-options:        -Wall
 
-    if flag(small_base)
-        build-depends:      
-            base,
-            pretty,
-            process,
-            directory,
-            containers,
-            bytestring
-    else
-        build-depends:      
-            base < 3
-
-    build-depends:
-            Cabal   > 1.6,
-            pureMD5 >= 0.2.1,
-            filepath
+    build-depends:      
+        base >= 4,
+        pretty,
+        process,
+        directory,
+        containers,
+        bytestring,
+        Cabal   > 1.6,
+        pureMD5 >= 0.2.1,
+        filepath
 
