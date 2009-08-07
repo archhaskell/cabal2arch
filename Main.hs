@@ -542,25 +542,30 @@ cabal2pkg cabal
 
     , arch_build =
         [ "cd ${srcdir}/" </> display name <-> display vers
-        , "runhaskell Setup configure --prefix=/usr || return 1"
+        , "runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} || return 1"
         , "runhaskell Setup build                   || return 1"
         ] ++
 
     -- Only needed for libraries:
         (if hasLibrary
            then
-            ["runhaskell Setup register   --gen-script || return 1"
-            ,"runhaskell Setup unregister --gen-script || return 1"
-            ,"install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
+            [ "runhaskell Setup haddock || return 1"
+            , "runhaskell Setup register   --gen-script || return 1"
+            , "runhaskell Setup unregister --gen-script || return 1"
+            , "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
             , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
+            , "install -d -m755 $pkgdir/usr/share/doc/ghc/libraries"
+            , "ln -s /usr/share/doc/${pkgname}/html ${pkgdir}/usr/share/doc/ghc/libraries/" ++ (display name)
             ]
            else [])
          ++
          ["runhaskell Setup copy --destdir=${pkgdir} || return 1"]
          ++
          (if not (null (licenseFile cabal)) && license cabal `notElem` [GPL,LGPL]
-          then ["install -D -m644 " ++ licenseFile cabal ++
-                    " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE || return 1" ]
+          then
+              [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE || return 1"
+              , "rm -f ${pkgdir}/usr/share/doc/${pkgname}/LICENSE"
+              ]
           else [])
 
     -- if its a library:
@@ -614,15 +619,20 @@ install_hook pkgname = unlines
     [ "HS_DIR=/usr/share/haskell/" ++ pkgname
     , "post_install() {"
     , "  ${HS_DIR}/register.sh"
+    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
     , "}"
     , "pre_upgrade() {"
     , "  ${HS_DIR}/unregister.sh"
     , "}"
     , "post_upgrade() {"
     , "  ${HS_DIR}/register.sh"
+    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
     , "}"
     , "pre_remove() {"
     , "  ${HS_DIR}/unregister.sh"
+    , "}"
+    , "post_remove() {"
+    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
     , "}"
     , "op=$1"
     , "shift"
