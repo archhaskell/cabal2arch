@@ -16,7 +16,7 @@ executable cabal2arch
     ghc-options:        -Wall
 
     build-depends:      
-        base >= 4,
+        base >= 4 && <= 6,
         pretty,
         process,
         directory,
