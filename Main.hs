@@ -501,7 +501,7 @@ cabal2pkg cabal
   (emptyPkgBuild
     { arch_pkgname = archName
     , arch_pkgver  = vers
-    , arch_url     = "http://hackage.haskell.org/cgi-bin/hackage-scripts/package/"++display name
+    , arch_url     = "http://hackage.haskell.org/package/"++display name
  --       else homepage cabal
     , arch_pkgdesc = case synopsis cabal of
                           [] -> take 80 (description cabal)
