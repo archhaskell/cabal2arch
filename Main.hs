@@ -375,6 +375,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("gl",          "")
         ,("glu",          "")
         ,("db_cxx",          "")
+        ,("db_cxx",          "")
+        ,("xdamage",        "")
 
         ,("icui18n",          "icu")
         ,("icuuc",          "icu")
@@ -413,9 +415,14 @@ shouldNotBeLibraries =
     ,"gtk2hs"
     ,"darcs"
     ,"greencard"
-    ,"pandoc"
+-- the pandoc package doesnt' ship haskell-pandoc
+--    ,"pandoc"
     ,"pugs-drift"
     ,"wol"
+    ,"timepiece"
+    ,"hledger"
+    ,"hp2any-graph"
+    ,"hp2any-manager"
     ]
 
 -- translate some library dependencies to gtk names
@@ -599,6 +606,8 @@ cabal2pkg cabal
          | Dependency (PackageName d) v <- gtk2hsIfy (buildDepends cabal) ]
         `mappend`
      anyClibraries
+        `mappend`
+     ArchList [ ArchDep d | b <- allBuildInfo cabal, d <- buildTools b ]
 
     -- TODO: need a 'nub' in here.
 
