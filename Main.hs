@@ -183,10 +183,17 @@ getMD5 _ = die "Malformed PkgBuild"
 --
 removeCoreFrom :: [Dependency] -> [Dependency]
 removeCoreFrom []               = []
-removeCoreFrom (x@(Dependency n _):xs) =
+removeCoreFrom (x@(Dependency n vr):xs) =
   case find (\(Dependency k _) -> n == k) corePackages of
-    Just _ -> removeCoreFrom xs
-    Nothing -> x : removeCoreFrom xs
+    -- haskell-parsec, haskell-quickcheck
+    Just (Dependency _ (ThisVersion v'))
+        | withinRange v' vr         ->     removeCoreFrom xs
+
+    Just (Dependency (PackageName "base") _)
+                                    ->     removeCoreFrom xs
+
+    Just (Dependency _ AnyVersion)  ->     removeCoreFrom xs
+    _                               -> x : removeCoreFrom xs
 
 --
 -- Core packages and their versions. These come with
@@ -205,7 +212,7 @@ corePackages =
     ,Dependency (PackageName "HUnit")            (ThisVersion (Version  [1,2,0,3] []))
     ,Dependency (PackageName "QuickCheck")       (ThisVersion (Version  [1,2,0,0] []))
     ,Dependency (PackageName "array")            (ThisVersion (Version  [0,2,0,0] []))
-    ,Dependency (PackageName "base")             (ThisVersion (Version  [3,0,3,0] []))
+    ,Dependency (PackageName "base")             (ThisVersion (Version  [4,1,0,0] []))
     ,Dependency (PackageName "bytestring")       (ThisVersion (Version  [0,9,1,4] []))
     ,Dependency (PackageName "containers")       (ThisVersion (Version  [0,2,0,0] []))
     ,Dependency (PackageName "directory")        (ThisVersion (Version  [1,0,0,2] []))
@@ -619,6 +626,9 @@ cabal2pkg cabal
                   | otherwise = ArchList libs
        where
          libs = [ ArchDep (Dependency (PackageName s) AnyVersion) | s <- nub (findCLibs cabal) ]
+
+-- quickcheck 2.
+-- parsec 3
 
 --
 -- post install, and pre-remove hooks to run, to sync up ghc-pkg
