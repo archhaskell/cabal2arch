@@ -584,8 +584,8 @@ cabal2pkg cabal
             , "runhaskell Setup unregister --gen-script || return 1"
             , "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
             , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
-            , "install -d -m755 $pkgdir/usr/share/doc/ghc/libraries"
-            , "ln -s /usr/share/doc/${pkgname}/html ${pkgdir}/usr/share/doc/ghc/libraries/" ++ (display name)
+            , "install -d -m755 $pkgdir/usr/share/doc/ghc/html/libraries"
+            , "ln -s /usr/share/doc/${pkgname}/html ${pkgdir}/usr/share/doc/ghc/html/libraries/" ++ (display name)
             ]
            else [])
          ++
@@ -656,20 +656,20 @@ install_hook pkgname = unlines
     [ "HS_DIR=/usr/share/haskell/" ++ pkgname
     , "post_install() {"
     , "  ${HS_DIR}/register.sh"
-    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
+    , "  (cd /usr/share/doc/ghc/html/libraries; ./gen_contents_index)"
     , "}"
     , "pre_upgrade() {"
     , "  ${HS_DIR}/unregister.sh"
     , "}"
     , "post_upgrade() {"
     , "  ${HS_DIR}/register.sh"
-    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
+    , "  (cd /usr/share/doc/ghc/html/libraries; ./gen_contents_index)"
     , "}"
     , "pre_remove() {"
     , "  ${HS_DIR}/unregister.sh"
     , "}"
     , "post_remove() {"
-    , "  (cd /usr/share/doc/ghc/libraries; ./gen_contents_index)"
+    , "  (cd /usr/share/doc/ghc/html/libraries; ./gen_contents_index)"
     , "}"
     , "op=$1"
     , "shift"
