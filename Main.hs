@@ -400,6 +400,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
+    ,"gitit"
     ,"l-seed"
     ,"hspresent"
     ,"haskell-platform"
@@ -614,7 +615,9 @@ cabal2pkg cabal
         `mappend`
      anyClibraries
         `mappend`
-     ArchList [ ArchDep d | b <- allBuildInfo cabal, d <- buildTools b ]
+     ArchList [ ArchDep d | b <- allBuildInfo cabal
+                          , d@(Dependency n _) <- buildTools b
+                          , n /= PackageName "hsc2hs"  ]
 
     -- TODO: need a 'nub' in here.
 
