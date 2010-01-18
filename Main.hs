@@ -145,10 +145,22 @@ main =
             die "Unable to tar package"
         Right _ -> putStrLn ("Created " ++ (cwd </> dir <.> "tar.gz"))
 
-   -- RSS generation help
-   writeFile "title" (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
-   writeFile "desc"  (show $ arch_pkgdesc pkgbuild)
-   writeFile "link"  (show $ arch_url pkgbuild)
+   -- If the user created a .cabal2arch.log file, append log results there.
+   mh <- getEnvMaybe "HOME"
+   case mh of
+        Nothing   -> return ()
+        Just home -> do
+           b <- doesFileExist $ home </> ".cabal2arch.log"
+           if not b
+              then return ()
+              else do
+
+               -- Log to build file.
+               appendFile (home </> ".cabal2arch.log") $ (show $ (,,)
+
+                   (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
+                   (arch_pkgdesc pkgbuild)
+                   (arch_url pkgbuild)) ++ "\n"
 
 ------------------------------------------------------------------------
 
