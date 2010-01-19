@@ -682,7 +682,7 @@ install_hook pkgname = unlines
 help :: IO a
 help = do
  hPutStrLn stderr $ unlines
-    [ "cabal2pkg: [-h|--help] [directory|url]"
+    [ "cabal2arch: [-h|--help] [directory|url]"
     , ""
     , "  Generate PKGBUILD to stdout for .cabal file in <directory> or at <url>"
     , ""
