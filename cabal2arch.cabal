@@ -22,7 +22,7 @@ executable cabal2arch
         directory,
         containers,
         bytestring,
-        Cabal   > 1.6,
+        Cabal   > 1.8,
         pureMD5 >= 0.2.1,
         filepath,
         archlinux > 0.1

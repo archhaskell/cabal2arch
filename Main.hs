@@ -103,9 +103,8 @@ main =
    -- Create a package description with all configurations resolved.
    let e_finalcabalsrc = finalizePackageDescription
         []
-        (Nothing :: Maybe (PackageIndex PackageIdentifier))
-        buildOS -- linux/x86_64
-        X86_64
+        (const True)  -- could check against prefered pkgs....
+        (Platform X86_64 buildOS) -- linux/x86_64
         (CompilerId GHC (Version [6,10,3] []))
 
         -- now constrain it to solve in the context of a modern ghc only
@@ -539,8 +538,8 @@ cabal2pkg cabal
     , arch_license =
         ArchList . return $
             case license cabal of
-                GPL  -> GPL
-                LGPL -> LGPL
+                x@GPL {} -> x
+                x@LGPL {} -> x
                 l    -> UnknownLicense ("custom:"++ show l)
 
     -- All Hackage packages depend on GHC at build time
@@ -591,7 +590,7 @@ cabal2pkg cabal
          ++
          ["runhaskell Setup copy --destdir=${pkgdir} || return 1"]
          ++
-         (if not (null (licenseFile cabal)) && license cabal `notElem` [GPL,LGPL]
+         (if not (null (licenseFile cabal)) && (case license cabal of GPL {} -> False; LGPL {} -> False; _ -> True)
           then
               [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE || return 1"
               , "rm -f ${pkgdir}/usr/share/doc/${pkgname}/LICENSE"
