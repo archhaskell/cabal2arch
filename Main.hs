@@ -5,7 +5,7 @@
 
 -- |
 -- Module    : cabal2arch: convert cabal packages to Arch Linux PKGBUILD format
--- Copyright : (c) Don Stewart, 2008
+-- Copyright : (c) Don Stewart, 2008 .. 2010
 -- License   : BSD3
 --
 -- Maintainer: Don Stewart <dons@galois.com>
@@ -683,7 +683,7 @@ help = do
  hPutStrLn stderr $ unlines
     [ "cabal2arch: [-h|--help] [directory|url]"
     , ""
-    , "  Generate PKGBUILD to stdout for .cabal file in <directory> or at <url>"
+    , "  Generate PKGBUILD for the .cabal file in <directory> or at <url>"
     , ""
     , "Usage:"
     , "   -h    Display help message"
