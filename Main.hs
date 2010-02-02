@@ -335,7 +335,7 @@ findCabalFile cwd tmp = do
 findCLibs :: PackageDescription -> [String]
 findCLibs (PackageDescription { library = lib, executables = exe }) =
     -- warn for packages not in list.
-    map (canonicalise . map toLower) (some ++ rest)
+    filter (not . null) $ map (canonicalise . map toLower) (some ++ rest)
   where
     some = concatMap (extraLibs.buildInfo) exe
     rest = case lib of
