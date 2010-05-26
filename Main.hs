@@ -340,7 +340,12 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
     some = concatMap (extraLibs.buildInfo) exe
     rest = case lib of
                     Nothing -> []
-                    Just l  -> extraLibs (libBuildInfo l)
+                    Just l  -> extraLibs (libBuildInfo l) ++
+                                map (\(Dependency (PackageName n) _) ->
+                                    if '-' `elem` n 
+                                        then reverse . drop 1 . dropWhile (/= '-') .  reverse $ n
+                                        else n)
+                                        (pkgconfigDepends (libBuildInfo l))
 
     canonicalise k = case M.lookup k translationTable of
         Nothing -> trace ("WARNING: this library depends on a C library we do not know the pacman name for (" ++ map toLower k ++ ") . Check the C library names in the generated PKGBUILD File") $ map toLower k
@@ -404,6 +409,25 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("ffi",        "libffi")
         ,("ogg",        "libogg")
         ,("theora",        "libtheora")
+
+
+        -- subsumed into glib
+
+        ,("gobject",                "")
+        ,("gio",                    "")
+        ,("gthread",                "")
+        ,("gnome-vfs-module",       "")
+        ,("gstreamer-audio",        "")
+        ,("gstreamer-base",         "")
+        ,("gstreamer-controller",   "")
+        ,("gstreamer-dataprotocol", "")
+        ,("gstreamer-net",          "")
+
+        ,("webkit",      "libwebkit")
+        ,("gtk+",        "gtkglext")
+
+        ,("gstreamer",   "gstreamer0.10")
+        ,("gstreamer-plugins-base", "gstreamer0.10-base")
         ]
         -- atlas
 
@@ -446,6 +470,9 @@ shouldNotBeLibraries =
 -- translate some library dependencies to gtk names
 --
 gtk2hsIfy :: [Dependency] -> [Dependency]
+gtk2hsIfy = id
+
+{-
 gtk2hsIfy [] = []
 gtk2hsIfy xs | foundSome = Dependency (PackageName "gtk2hs") AnyVersion :
                            [ v | v@(Dependency n _) <- xs
@@ -455,10 +482,13 @@ gtk2hsIfy xs | foundSome = Dependency (PackageName "gtk2hs") AnyVersion :
     where
         foundSome = not . null $ filter (`elem` gtkLibs) (map unDep xs)
         unDep (Dependency n _) = n
+-}
 
-
+-- TODO: will need to remove this:
 gtkLibs :: [PackageName]
 gtkLibs = map PackageName
+    []
+    {-
     ["glade" -- guihaskell
     ,"cairo"
     ,"glib"
@@ -469,6 +499,8 @@ gtkLibs = map PackageName
     ,"mozembed"
     ,"svgcairo"
     ]
+    -}
+
 
 ------------------------------------------------------------------------
 -- Parsing and pretty printing:
@@ -630,9 +662,15 @@ cabal2pkg cabal
         `mappend`
      anyClibraries
         `mappend`
-     ArchList [ ArchDep d | b <- allBuildInfo cabal
+     ArchList [ ArchDep d' | b <- allBuildInfo cabal
                           , d@(Dependency n _) <- buildTools b
-                          , n /= PackageName "hsc2hs"  ]
+                          , n /= PackageName "hsc2hs"
+                          , let d' | n `elem` gtkTools
+                                        = Dependency (PackageName "gtk2hs-buildtools") AnyVersion
+                                   | otherwise        = d
+                          ]
+
+    gtkTools = map PackageName ["gtk2hsTypeGen" , "gtk2hsHookGenerator", "gtk2hsC2hs"]
 
     -- TODO: need a 'nub' in here.
 
