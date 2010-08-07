@@ -409,6 +409,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("ffi",        "libffi")
         ,("ogg",        "libogg")
         ,("theora",        "libtheora")
+        ,("mtp",        "libmtp")
+        ,("zmq",        "zeromq")
 
 
         -- subsumed into glib
