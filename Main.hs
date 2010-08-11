@@ -227,16 +227,17 @@ corePackages =
 
 -- Magic packages we have to remove
      Dependency (PackageName "base")             (ThisVersion (Version  [4,1,0,0] []))
-    ,Dependency (PackageName "dph-base")           (ThisVersion (Version [ 0,3 ] [] ))
-    ,Dependency (PackageName "dph-par" )           (ThisVersion (Version [ 0,3 ] [] ))
-    ,Dependency (PackageName "dph-prim-interface") (ThisVersion (Version [ 0,3 ] [] ))
-    ,Dependency (PackageName "dph-prim-par"   )    (ThisVersion (Version [ 0,3 ] [] ))
-    ,Dependency (PackageName "dph-prim-seq"   )    (ThisVersion (Version [ 0,3 ] [] ))
-    ,Dependency (PackageName "dph-seq"        )    (ThisVersion (Version [ 0,3 ] [] ))
+    ,Dependency (PackageName "dph-base")           (AnyVersion)
+    ,Dependency (PackageName "dph-par" )           (AnyVersion)
+    ,Dependency (PackageName "dph-prim-interface") (AnyVersion)
+    ,Dependency (PackageName "dph-prim-par"   )    (AnyVersion)
+    ,Dependency (PackageName "dph-prim-seq"   )    (AnyVersion)
+    ,Dependency (PackageName "dph-seq"        )    (AnyVersion)
     ,Dependency (PackageName "ghc")              (AnyVersion)
     ,Dependency (PackageName "ghc-prim")         (AnyVersion)
     ,Dependency (PackageName "integer")         (AnyVersion)
     ,Dependency (PackageName "integer-gmp")         (AnyVersion)
+    ,Dependency (PackageName "ghc-binary")         (AnyVersion)
 
 -- Official Provides: http://repos.archlinux.org/wsvn/packages/ghc/repos/extra-x86_64/PKGBUILD
 --  ,Dependency (PackageName "array")            (ThisVersion (Version  [0,3,0,0] []))
