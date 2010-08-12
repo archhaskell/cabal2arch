@@ -412,6 +412,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("theora",        "libtheora")
         ,("mtp",        "libmtp")
         ,("zmq",        "zeromq")
+        ,("cv",        "opencv")
+        ,("highgui",        "opencv")
 
 
         -- subsumed into glib
