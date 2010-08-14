@@ -414,6 +414,9 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("zmq",        "zeromq")
         ,("cv",        "opencv")
         ,("highgui",        "opencv")
+        ,("xss",        "libxss")
+        ,("idn",        "libidn")
+        ,("libgsasl",        "gsasl")
 
 
         -- subsumed into glib
@@ -440,6 +443,7 @@ shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
     ,"gitit"
+    ,"berp"
     ,"l-seed"
     ,"hspresent"
     ,"haskell-platform"
