@@ -417,6 +417,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("xss",        "libxss")
         ,("idn",        "libidn")
         ,("libgsasl",        "gsasl")
+        ,("event",        "libevent")
 
 
         -- subsumed into glib
@@ -433,6 +434,8 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
 
         ,("webkit",      "libwebkit")
         ,("gtk+",        "gtkglext")
+        ,("gdk",        "gtk")
+        ,("xine",        "xine-lib")
 
         ,("gstreamer",   "gstreamer0.10")
         ,("gstreamer-plugins-base", "gstreamer0.10-base")
@@ -443,6 +446,7 @@ shouldNotBeLibraries :: [String]
 shouldNotBeLibraries =
     ["xmonad"
     ,"gitit"
+    ,"yavie"
     ,"berp"
     ,"l-seed"
     ,"hspresent"
