@@ -1,5 +1,5 @@
 name:               cabal2arch
-version:            0.7.3
+version:            0.7.4
 homepage:           http://code.haskell.org/~dons/code/cabal2arch
 synopsis:           Create Arch Linux packages from Cabal packages
 description:        Create Arch Linux packages from Cabal packages
