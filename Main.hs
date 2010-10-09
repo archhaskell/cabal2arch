@@ -418,11 +418,13 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("idn",        "libidn")
         ,("libgsasl",        "gsasl")
         ,("event",        "libevent")
+        ,("gcc_s",        "gcc-libs")
 
 
         -- subsumed into glib
 
         ,("gobject",                "")
+        ,("gmodule",                "glib2")
         ,("gio",                    "")
         ,("gthread",                "")
         ,("gnome-vfs-module",       "")
@@ -431,11 +433,18 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
         ,("gstreamer-controller",   "")
         ,("gstreamer-dataprotocol", "")
         ,("gstreamer-net",          "")
+        ,("ogremain",          "")
+        ,("gnutls-extra",          "")
+        ,("pangocairo",        "pango")
 
         ,("webkit",      "libwebkit")
         ,("gtk+",        "gtkglext")
         ,("gdk",        "gtk")
+        ,("gdk-x11-2.0",        "gtk")
+        ,("gtk-x11-2.0",        "gtk")
         ,("xine",        "xine-lib")
+        ,("ncursesw",        "ncurses")
+        ,("panel",          "ncurses")
 
         ,("gstreamer",   "gstreamer0.10")
         ,("gstreamer-plugins-base", "gstreamer0.10-base")
