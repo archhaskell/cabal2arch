@@ -25,5 +25,5 @@ executable cabal2arch
         Cabal   > 1.8,
         pureMD5 >= 0.2.1,
         filepath,
-        archlinux > 0.1
+        archlinux >= 0.3.3
 
