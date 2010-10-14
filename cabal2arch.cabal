@@ -8,8 +8,12 @@ license:            BSD3
 license-file:       LICENSE
 author:             Don Stewart <dons@galois.com>
 maintainer:         ArchHaskell Team <arch-haskell@haskell.org>
-cabal-version:      >= 1.2
+cabal-version:      >= 1.6
 build-type:         Simple
+
+source-repository head
+  type:                 git
+  location:             git://github.com/archhaskell/cabal2arch.git
 
 executable cabal2arch
     main-is:            Main.hs
