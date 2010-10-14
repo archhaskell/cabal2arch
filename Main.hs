@@ -57,22 +57,22 @@ main :: IO ()
 main =
  C.bracket
    -- We do all our work in a temp directory
-  (do cwd  <- getCurrentDirectory
+  (do _cwd  <- getCurrentDirectory
       etmp <- myReadProcess "mktemp" ["-d"] []
       case etmp of
         Left _  -> die "Unable to create temp directory"
         Right d -> do
             let dir = makeValid (init d) -- drop newline
             setCurrentDirectory dir
-            return (dir, cwd))
+            return (dir, _cwd))
 
    -- Always remember to clean up
-  (\(d,cwd) -> do
-            setCurrentDirectory cwd
+  (\(d, _cwd) -> do
+            setCurrentDirectory _cwd
             removeDirectoryRecursive d)
 
    -- Now, get to work:
-  $ \(tmp,cwd) -> do
+  $ \(tmp, _cwd) -> do
 
    do x <- getArgs
       case x of
@@ -86,7 +86,7 @@ main =
                           return []
             Just s  -> return s
 
-   cabalfile <- findCabalFile cwd tmp
+   cabalfile <- findCabalFile _cwd tmp
    hPutStrLn stderr $ "Using " ++ cabalfile
 
    cabalsrc  <- readPackageDescription normal cabalfile
@@ -103,7 +103,7 @@ main =
        doc = pkg2doc email apkgbuild
        dir = arch_pkgname pkgbuild
 
-   setCurrentDirectory cwd
+   setCurrentDirectory _cwd
    createDirectoryIfMissing False dir
    setCurrentDirectory dir
 
@@ -114,15 +114,15 @@ main =
         Nothing -> return ()
         Just i  -> writeFile (install_hook_name (arch_pkgname pkgbuild)) i
 
-   setCurrentDirectory cwd
+   setCurrentDirectory _cwd
 
-   system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
+   _ <- system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
    tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
    case tarred of
         Left (_,s,_)  -> do
             hPutStrLn stderr s
             die "Unable to tar package"
-        Right _ -> putStrLn ("Created " ++ (cwd </> dir <.> "tar.gz"))
+        Right _ -> putStrLn ("Created " ++ (_cwd </> dir <.> "tar.gz"))
 
    -- If the user created a .cabal2arch.log file, append log results there.
    mh <- getEnvMaybe "HOME"
@@ -166,7 +166,6 @@ getMD5 pkg = do
                else do
                  hPutStrLn stderr $ "Incorrect output from makepkg."
                  return pkg
-getMD5 _ = die "Malformed PkgBuild"
 
 -- Return the path to a .cabal file.
 -- If not arguments are specified, use ".",
@@ -174,14 +173,14 @@ getMD5 _ = die "Malformed PkgBuild"
 -- otherwise, assume its a directory
 --
 findCabalFile :: FilePath -> FilePath -> IO FilePath
-findCabalFile cwd tmp = do
+findCabalFile _cwd tmp = do
    args <- getArgs
    let epath | null args
-                = Right cwd
+                = Right _cwd
              | "http://" `isPrefixOf` file
                 = Left file
              | ".cabal"  `isSuffixOf` file
-                = Right (makeValid (joinPath [cwd,file]))
+                = Right (makeValid (joinPath [_cwd,file]))
              | otherwise  -- a directory path
                 = Right file
 
@@ -262,11 +261,11 @@ myReadProcess cmd args input = C.handle (return . handler) $ do
 
     output  <- hGetContents outh
     outMVar <- newEmptyMVar
-    forkIO $ (C.evaluate (length output) >> putMVar outMVar ())
+    _ <- forkIO $ (C.evaluate (length output) >> putMVar outMVar ())
 
     errput  <- hGetContents errh
     errMVar <- newEmptyMVar
-    forkIO $ (C.evaluate (length errput) >> putMVar errMVar ())
+    _ <- forkIO $ (C.evaluate (length errput) >> putMVar errMVar ())
 
     when (not (null input)) $ hPutStr inh input
     takeMVar outMVar
