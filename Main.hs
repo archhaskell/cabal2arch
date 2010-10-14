@@ -596,7 +596,15 @@ cabal2pkg cabal
             [ "runhaskell Setup haddock"
             , "runhaskell Setup register   --gen-script"
             , "runhaskell Setup unregister --gen-script"
-            , "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
+            ]
+           else [])
+
+    , arch_package =
+        [ "cd ${srcdir}/" </> display name <-> display vers ] ++
+        -- Only needed for libraries:
+        (if hasLibrary
+           then
+            [ "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
             , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
             , "install -d -m755 $pkgdir/usr/share/doc/ghc/html/libraries"
             , "ln -s /usr/share/doc/${pkgname}/html ${pkgdir}/usr/share/doc/ghc/html/libraries/" ++ (display name)
