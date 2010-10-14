@@ -36,9 +36,6 @@ import Distribution.Simple.PackageIndex
 -- from the archlinux package:
 import Distribution.ArchLinux.PkgBuild
 
-import Data.Digest.Pure.MD5
-import qualified Data.ByteString.Lazy as B
-
 import Control.Monad
 import Control.Concurrent
 import qualified Control.OldException as C
@@ -163,26 +160,29 @@ main =
 
 ------------------------------------------------------------------------
 
--- | Given an abstract pkgbuild, download the source bundle,
--- and compute its md5, returning a modified PkgBuild with
--- the md5 set.
---
--- TODO we may want to use a local package.
+-- | Given an abstract pkgbuild, run "makepkg -g" to compute md5
+-- of source files (possibly cached locally), and modify the PkgBuild
+-- accordingly.
 --
 getMD5 :: PkgBuild -> IO PkgBuild
-getMD5 pkg@(PkgBuild { arch_source = ArchList [url] }) = do
-   hPutStrLn stderr $ "Fetching " ++ url
-   hFlush stderr
-   eres <- myReadProcess "wget" [url] []
+getMD5 pkg = do
+   putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
+   eres <- readProcessWithExitCode "makepkg" ["-g"] (render $ disp pkg)
    case eres of
-       Left (_,s,_) -> do
-            hPutStrLn stderr s
-            hPutStrLn stderr $ "Couldn't download package: " ++ show url
+       (ExitFailure _,_,err) -> do
+            hPutStrLn stderr err
+            hPutStrLn stderr $ "makepkg encountered an error while calculating MD5."
             return pkg
-       Right _ -> do
-            src <- B.readFile (takeBaseName url <.> "gz")
-            let !md5sum = show (md5 src)
-            return pkg { arch_md5sum = ArchList [md5sum] }
+       (ExitSuccess,out,err) -> do
+            -- s should be "md5sums=(' ... ')"
+            hPutStrLn stderr err
+            if "md5sums=('" `isPrefixOf` out
+               then
+                 let md5sum = takeWhile (\x -> x `elem` "0123456789abcdef") $ drop 10 out
+                 in return pkg { arch_md5sum = ArchList [md5sum] }
+               else do
+                 hPutStrLn stderr $ "Incorrect output from makepkg."
+                 return pkg
 getMD5 _ = die "Malformed PkgBuild"
 
 -- attempt to filter out core packages we've already satisified
