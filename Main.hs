@@ -16,7 +16,7 @@
 -- TODO: if build-type: Configure, accurate C library dependecies
 -- require downloading the source, and running configure
 --
--- C libraries are dynamicall linked, should be listed in depends,
+-- C libraries are dynamically linked, should be listed in depends,
 -- rather than makedepends
 
 import Distribution.Package
@@ -343,7 +343,7 @@ findCLibs (PackageDescription { library = lib, executables = exe }) =
                     Nothing -> []
                     Just l  -> extraLibs (libBuildInfo l) ++
                                 map (\(Dependency (PackageName n) _) ->
-                                    if '-' `elem` n 
+                                    if '-' `elem` n
                                         then reverse . drop 1 . dropWhile (/= '-') .  reverse $ n
                                         else n)
                                         (pkgconfigDepends (libBuildInfo l))
@@ -574,13 +574,13 @@ pkg2doc email pkg = vcat
  ]
 
 --
--- | Tranlsate a generic cabal file into a PGKBUILD
+-- | Translate a generic cabal file into a PGKBUILD
 --
 cabal2pkg :: PackageDescription -> (PkgBuild, Maybe String)
 cabal2pkg cabal
 
--- TODO decide if its a library or an executable,
--- handle mullltipackages
+-- TODO decide if it's a library or an executable,
+-- handle multipackages
 -- extract C dependencies
 
 -- = trace (show cabal) $
@@ -629,16 +629,16 @@ cabal2pkg cabal
 
     , arch_build =
         [ "cd ${srcdir}/" </> display name <-> display vers
-        , "runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} || return 1"
-        , "runhaskell Setup build                   || return 1"
+        , "runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname}"
+        , "runhaskell Setup build"
         ] ++
 
     -- Only needed for libraries:
         (if hasLibrary
            then
-            [ "runhaskell Setup haddock || return 1"
-            , "runhaskell Setup register   --gen-script || return 1"
-            , "runhaskell Setup unregister --gen-script || return 1"
+            [ "runhaskell Setup haddock"
+            , "runhaskell Setup register   --gen-script"
+            , "runhaskell Setup unregister --gen-script"
             , "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
             , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
             , "install -d -m755 $pkgdir/usr/share/doc/ghc/html/libraries"
@@ -646,11 +646,11 @@ cabal2pkg cabal
             ]
            else [])
          ++
-         ["runhaskell Setup copy --destdir=${pkgdir} || return 1"]
+         ["runhaskell Setup copy --destdir=${pkgdir}"]
          ++
          (if not (null (licenseFile cabal)) && (case license cabal of GPL {} -> False; LGPL {} -> False; _ -> True)
           then
-              [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE || return 1"
+              [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
               , "rm -f ${pkgdir}/usr/share/doc/${pkgname}/LICENSE"
               ]
           else [])
