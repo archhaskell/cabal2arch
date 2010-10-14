@@ -15,14 +15,13 @@ executable cabal2arch
     main-is:            Main.hs
     ghc-options:        -Wall
 
-    build-depends:      
+    build-depends:
         base >= 4 && <= 6,
         pretty,
         process,
         directory,
         containers,
         bytestring,
-        Cabal   > 1.8,
+        Cabal > 1.8,
         filepath,
         archlinux >= 0.3.3
-
