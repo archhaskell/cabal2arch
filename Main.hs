@@ -604,9 +604,9 @@ cabal2pkg cabal
         -- Only needed for libraries:
         (if hasLibrary
            then
-            [ "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/$pkgname/register.sh"
-            , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/$pkgname/unregister.sh"
-            , "install -d -m755 $pkgdir/usr/share/doc/ghc/html/libraries"
+            [ "install -D -m744 register.sh   ${pkgdir}/usr/share/haskell/${pkgname}/register.sh"
+            , "install    -m744 unregister.sh ${pkgdir}/usr/share/haskell/${pkgname}/unregister.sh"
+            , "install -d -m755 ${pkgdir}/usr/share/doc/ghc/html/libraries"
             , "ln -s /usr/share/doc/${pkgname}/html ${pkgdir}/usr/share/doc/ghc/html/libraries/" ++ (display name)
             ]
            else [])
@@ -615,7 +615,7 @@ cabal2pkg cabal
          ++
          (if not (null (licenseFile cabal)) && (case license cabal of GPL {} -> False; LGPL {} -> False; _ -> True)
           then
-              [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
+              [ "install -D -m644 " ++ licenseFile cabal ++ " ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
               , "rm -f ${pkgdir}/usr/share/doc/${pkgname}/LICENSE"
               ]
           else [])
