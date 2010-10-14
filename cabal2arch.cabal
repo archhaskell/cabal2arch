@@ -6,8 +6,8 @@ description:        Create Arch Linux packages from Cabal packages
 category:           Distribution
 license:            BSD3
 license-file:       LICENSE
-author:             Don Stewart
-maintainer:         dons@galois.com
+author:             Don Stewart <dons@galois.com>
+maintainer:         ArchHaskell Team <arch-haskell@haskell.org>
 cabal-version:      >= 1.2
 build-type:         Simple
 
