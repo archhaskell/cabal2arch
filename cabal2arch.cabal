@@ -24,5 +24,5 @@ executable cabal2arch
         bytestring,
         Cabal   > 1.8,
         filepath,
-        archlinux > 0.1
+        archlinux >= 0.3.3
 
