@@ -30,7 +30,7 @@ import Distribution.ArchLinux.CabalTranslation
 
 import Control.Monad
 import Control.Concurrent
-import qualified Control.OldException as C
+import qualified Control.Exception as CE
 
 import Data.List
 
@@ -55,7 +55,7 @@ comment = render $ vcat
 
 main :: IO ()
 main =
- C.bracket
+ CE.bracket
    -- We do all our work in a temp directory
   (do _cwd  <- getCurrentDirectory
       etmp <- myReadProcess "mktemp" ["-d"] []
@@ -244,7 +244,7 @@ die s = do
 
 -- Safe wrapper for getEnv
 getEnvMaybe :: String -> IO (Maybe String)
-getEnvMaybe name = C.handle (const $ return Nothing) (Just `fmap` getEnv name)
+getEnvMaybe name = CE.handle ((const :: a -> CE.SomeException -> a) $ return Nothing) (Just `fmap` getEnv name)
 
 ------------------------------------------------------------------------
 
@@ -256,21 +256,21 @@ myReadProcess :: FilePath                              -- ^ command to run
             -> String                                -- ^ standard input
             -> IO (Either (ExitCode,String,String) String)  -- ^ either the stdout, or an exitcode and any output
 
-myReadProcess cmd args input = C.handle (return . handler) $ do
+myReadProcess cmd args input = CE.handle (return . handler) $ do
     (inh,outh,errh,pid) <- runInteractiveProcess cmd args Nothing Nothing
 
     output  <- hGetContents outh
     outMVar <- newEmptyMVar
-    _ <- forkIO $ (C.evaluate (length output) >> putMVar outMVar ())
+    _ <- forkIO $ (CE.evaluate (length output) >> putMVar outMVar ())
 
     errput  <- hGetContents errh
     errMVar <- newEmptyMVar
-    _ <- forkIO $ (C.evaluate (length errput) >> putMVar errMVar ())
+    _ <- forkIO $ (CE.evaluate (length errput) >> putMVar errMVar ())
 
     when (not (null input)) $ hPutStr inh input
     takeMVar outMVar
     takeMVar errMVar
-    ex     <- C.catch (waitForProcess pid) (\_e -> return ExitSuccess)
+    ex     <- CE.catch (waitForProcess pid) ((const :: a -> CE.SomeException -> a) $ return ExitSuccess)
     hClose outh
     hClose inh          -- done with stdin
     hClose errh         -- ignore stderr
@@ -280,6 +280,6 @@ myReadProcess cmd args input = C.handle (return . handler) $ do
         ExitFailure _ -> Left (ex, errput, output)
 
   where
-    handler (C.ExitException e) = Left (e,"","")
+    handler (ExitFailure e) = Left (ExitFailure e,"","")
     handler e                   = Left (ExitFailure 1, show e, "")
 

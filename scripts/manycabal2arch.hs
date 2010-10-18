@@ -27,7 +27,7 @@ import System.IO
 import System.Process
 import System.Exit
 
-import qualified Control.OldException as C
+import qualified Control.Exception as CE
 
 import Debug.Trace
 
@@ -54,7 +54,7 @@ exportPackage dot email p = do
 main :: IO ()
 main = do
   argv <- getArgs
-  x <- case argv of
+  _ <- case argv of
     _:_:_:_ -> return ()
     _ -> help
   pkglist <- readFile (argv !! 0)
@@ -67,12 +67,12 @@ main = do
                     return []
       Just s  -> return s
   let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
-  mapM (exportPackage repo email) cabals
+  _ <- mapM (exportPackage repo email) cabals
   return ()
 
 -- Safe wrapper for getEnv                                                                                            
 getEnvMaybe :: String -> IO (Maybe String)
-getEnvMaybe name = C.handle (const $ return Nothing) (Just `fmap` getEnv name)
+getEnvMaybe name = CE.handle ((const :: a -> CE.SomeException -> a) $ return Nothing) (Just `fmap` getEnv name)
 
 comment :: String
 comment = render $ vcat
