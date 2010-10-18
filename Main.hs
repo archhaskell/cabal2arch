@@ -19,15 +19,10 @@
 -- C libraries are dynamically linked, should be listed in depends,
 -- rather than makedepends
 
-import Distribution.PackageDescription
 import Distribution.PackageDescription.Parse
-import Distribution.PackageDescription.Configuration
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
-import Distribution.Version
 import Distribution.Text
-import Distribution.Compiler
-import Distribution.System
 
 -- from the archlinux package:
 import Distribution.ArchLinux.PkgBuild

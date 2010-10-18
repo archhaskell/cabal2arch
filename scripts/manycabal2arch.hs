@@ -68,6 +68,7 @@ main = do
       Just s  -> return s
   let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
   mapM (exportPackage repo email) cabals
+  return ()
 
 -- Safe wrapper for getEnv                                                                                            
 getEnvMaybe :: String -> IO (Maybe String)
