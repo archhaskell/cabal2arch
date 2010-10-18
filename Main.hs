@@ -97,22 +97,11 @@ main =
    cabalsrc  <- readPackageDescription normal cabalfile
 
    -- Create a package description with all configurations resolved.
-   let e_finalcabalsrc = finalizePackageDescription
-        []
-        (const True)  -- could check against prefered pkgs....
-        (Platform X86_64 buildOS) -- linux/x86_64
-        (CompilerId GHC (Version [6,10,3] []))
-
-        -- now constrain it to solve in the context of a modern ghc only
-        corePackages
-        cabalsrc
-
-   finalcabal <- case e_finalcabalsrc of
-        Left deps     -> die $ "Unresolved dependencies: " ++show deps
-        Right (pkg,_) ->
-            return $ pkg { buildDepends = removeCoreFrom (buildDepends pkg) }
-
-   let (pkgbuild', hooks) = cabal2pkg finalcabal
+   let finalcabal = preprocessCabal cabalsrc
+   finalcabal' <- case finalcabal of
+                    Nothing -> die "Aborting..."
+                    Just f -> return f
+   let (pkgbuild', hooks) = cabal2pkg finalcabal'
 
    pkgbuild  <- getMD5 pkgbuild'
    let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
