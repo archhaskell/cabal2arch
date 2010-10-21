@@ -11,6 +11,7 @@
 import Distribution.ArchLinux.PkgBuild
 import Distribution.ArchLinux.CabalTranslation
 import Distribution.ArchLinux.HackageTranslation
+import Distribution.ArchLinux.SystemProvides
 
 import Distribution.PackageDescription
 import Distribution.Text
@@ -33,13 +34,13 @@ import Debug.Trace
 
 import Paths_cabal2arch
 
-exportPackage :: FilePath -> String -> GenericPackageDescription -> IO ()
-exportPackage dot email p = do
-  let q = preprocessCabal p
+exportPackage :: FilePath -> String -> SystemProvides -> GenericPackageDescription -> IO ()
+exportPackage dot email sysProvides p = do
+  let q = preprocessCabal p sysProvides
   case q of
     Nothing -> return ()
     Just p' -> do
-      let (pkg, script) = cabal2pkg p'
+      let (pkg, script) = cabal2pkg p' sysProvides
           pkgname = trace ("Converting package " ++ arch_pkgname pkg) (arch_pkgname pkg)
       pkgbuild  <- getMD5 pkg
       let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
@@ -66,8 +67,9 @@ main = do
       Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
                     return []
       Just s  -> return s
+  sysProvides <- getDefaultSystemProvides
   let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
-  _ <- mapM (exportPackage repo email) cabals
+  _ <- mapM (exportPackage repo email sysProvides) cabals
   return ()
 
 -- Safe wrapper for getEnv                                                                                            

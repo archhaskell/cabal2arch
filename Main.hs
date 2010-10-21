@@ -27,6 +27,7 @@ import Distribution.Text
 -- from the archlinux package:
 import Distribution.ArchLinux.PkgBuild
 import Distribution.ArchLinux.CabalTranslation
+import Distribution.ArchLinux.SystemProvides
 
 import Control.Monad
 import Control.Concurrent
@@ -92,11 +93,12 @@ main =
    cabalsrc  <- readPackageDescription normal cabalfile
 
    -- Create a package description with all configurations resolved.
-   let finalcabal = preprocessCabal cabalsrc
+   sysProvides <- getDefaultSystemProvides
+   let finalcabal = preprocessCabal cabalsrc sysProvides
    finalcabal' <- case finalcabal of
                     Nothing -> die "Aborting..."
                     Just f -> return f
-   let (pkgbuild', hooks) = cabal2pkg finalcabal'
+   let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
 
    pkgbuild  <- getMD5 pkgbuild'
    let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
