@@ -53,14 +53,6 @@ cmdLnArgs = CmdLnArgs { argCabalFile = "" &= argPos 0 &= typ "DIR|URL" }
     &= program "cabal2arch"
     &= summary "cabal2arch: Convert .cabal file to ArchLinux source package"
 
-comment :: String
-comment = render $ vcat
- [ text "# Note: we list all package dependencies."
- , text "# Your package tool should understand 'provides' syntax"
- , text "#"
- , text "# Keep up to date on http://archhaskell.wordpress.com/"
- , text "#"]
-
 main :: IO ()
 main =
     CE.bracket
@@ -104,8 +96,9 @@ main =
                 Just f -> return f
             let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
 
-            pkgbuild  <- getMD5 pkgbuild'
-            let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
+            apkgbuild' <- getMD5 pkgbuild'
+            let apkgbuild = apkgbuild' { pkgBuiltWith = Just version }
+                pkgbuild = pkgBody apkgbuild
                 doc = pkg2doc email apkgbuild
                 dir = arch_pkgname pkgbuild
 
@@ -152,7 +145,7 @@ main =
 -- of source files (possibly cached locally), and modify the PkgBuild
 -- accordingly.
 --
-getMD5 :: PkgBuild -> IO PkgBuild
+getMD5 :: AnnotatedPkgBuild -> IO AnnotatedPkgBuild
 getMD5 pkg = do
     putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
     eres <- readProcessWithExitCode "makepkg" ["-g"] $ display pkg
@@ -167,7 +160,7 @@ getMD5 pkg = do
             if "md5sums=('" `isPrefixOf` out
                 then
                     let md5sum = takeWhile (\x -> x `elem` "0123456789abcdef") $ drop 10 out
-                    in return pkg { arch_md5sum = ArchList [md5sum] }
+                    in return pkg { pkgBody = (pkgBody pkg) { arch_md5sum = ArchList [md5sum] } }
                 else do
                     hPutStrLn stderr $ "Incorrect output from makepkg."
                     return pkg
