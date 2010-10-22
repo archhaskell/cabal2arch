@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 -- |
 -- Module    : cabal2arch: convert cabal packages to Arch Linux PKGBUILD format
 -- Copyright : (c) Don Stewart, 2008 .. 2010
@@ -41,6 +43,16 @@ import System.FilePath
 import System.IO
 import System.Process hiding(cwd)
 
+import System.Console.CmdArgs
+
+data CmdLnArgs = CmdLnArgs { argCabalFile :: String }
+    deriving (Data, Typeable)
+
+cmdLnArgs :: CmdLnArgs
+cmdLnArgs = CmdLnArgs { argCabalFile = "" &= argPos 0 &= typ "DIR|URL" }
+    &= program "cabal2arch"
+    &= summary "cabal2arch: Convert .cabal file to ArchLinux source package"
+
 comment :: String
 comment = render $ vcat
  [ text "# Note: we list all package dependencies."
@@ -70,11 +82,7 @@ main =
         -- Now, get to work:
         $ \(tmp, _cwd) -> do
 
-            x <- getArgs
-            case x of
-                ["--help"] -> help
-                ["-h"]     -> help
-                _          -> return ()
+            myArgs <- cmdArgs cmdLnArgs
             email <- do
                 r <- getEnvMaybe "ARCH_HASKELL"
                 case r of
@@ -83,7 +91,7 @@ main =
                         return []
                     Just s  -> return s
 
-            cabalfile <- findCabalFile _cwd tmp
+            cabalfile <- findCabalFile myArgs _cwd tmp
             hPutStrLn stderr $ "Using " ++ cabalfile
 
             cabalsrc  <- readPackageDescription normal cabalfile
@@ -169,17 +177,17 @@ getMD5 pkg = do
 -- if the argument looks like a url, download that
 -- otherwise, assume its a directory
 --
-findCabalFile :: FilePath -> FilePath -> IO FilePath
-findCabalFile _cwd tmp = do
-    args <- getArgs
-    let epath | null args
+findCabalFile :: CmdLnArgs -> FilePath -> FilePath -> IO FilePath
+findCabalFile _args _cwd tmp = do
+    let epath
+            | null file
                 = Right _cwd
             | "http://" `isPrefixOf` file
                 = Left file
             | ".cabal"  `isSuffixOf` file
                 = Right (makeValid (joinPath [_cwd,file]))
             | otherwise  -- a directory path
-                = Right file where file = head args
+                = Right file where file = argCabalFile _args
 
     -- download url to .cabal
     case epath of
@@ -209,28 +217,6 @@ findCabalFile _cwd tmp = do
 -- Some extras
 --
 
-help :: IO a
-help = do
-    hPutStrLn stderr $ unlines
-        [ "cabal2arch: [-h|--help] [directory|url]"
-        , ""
-        , "  Generate PKGBUILD for the .cabal file in <directory> or at <url>"
-        , ""
-        , "Usage:"
-        , "   -h    Display help message"
-        , ""
-        , "Arguments: <directory>"
-        , "              Look for .cabal file in <directory>"
-        , "              If directory is empty, use pwd"
-        , "           <file.cabal>"
-        , "              Use .cabal file as source"
-        , "           <url>"
-        , "              Download .cabal file from <url>"
-        ]
-    exitWith ExitSuccess
-
-------------------------------------------------------------------------
-
 die :: String -> IO a
 die s = do
     hPutStrLn stderr $ "cabal2pkg:\n" ++ s
@@ -238,7 +224,7 @@ die s = do
 
 -- Safe wrapper for getEnv
 getEnvMaybe :: String -> IO (Maybe String)
-getEnvMaybe name = CE.handle ((const :: a -> CE.SomeException -> a) $ return Nothing) (Just `fmap` getEnv name)
+getEnvMaybe _name = CE.handle ((const :: a -> CE.SomeException -> a) $ return Nothing) (Just `fmap` getEnv _name)
 
 ------------------------------------------------------------------------
 
@@ -250,8 +236,8 @@ myReadProcess :: FilePath                              -- ^ command to run
             -> String                                -- ^ standard input
             -> IO (Either (ExitCode,String,String) String)  -- ^ either the stdout, or an exitcode and any output
 
-myReadProcess cmd args input = CE.handle (return . handler) $ do
-    (inh,outh,errh,pid) <- runInteractiveProcess cmd args Nothing Nothing
+myReadProcess cmd _args input = CE.handle (return . handler) $ do
+    (inh,outh,errh,pid) <- runInteractiveProcess cmd _args Nothing Nothing
 
     output  <- hGetContents outh
     outMVar <- newEmptyMVar
