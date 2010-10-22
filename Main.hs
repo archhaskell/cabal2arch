@@ -1,8 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
-{-# LANGUAGE BangPatterns               #-}
-{-# OPTIONS_GHC -fno-warn-orphans       #-}
-
 -- |
 -- Module    : cabal2arch: convert cabal packages to Arch Linux PKGBUILD format
 -- Copyright : (c) Don Stewart, 2008 .. 2010
@@ -56,92 +51,92 @@ comment = render $ vcat
 
 main :: IO ()
 main =
- CE.bracket
-   -- We do all our work in a temp directory
-  (do _cwd  <- getCurrentDirectory
-      etmp <- myReadProcess "mktemp" ["-d"] []
-      case etmp of
-        Left _  -> die "Unable to create temp directory"
-        Right d -> do
-            let dir = makeValid (init d) -- drop newline
-            setCurrentDirectory dir
-            return (dir, _cwd))
+    CE.bracket
+        -- We do all our work in a temp directory
+        (do _cwd  <- getCurrentDirectory
+            etmp <- myReadProcess "mktemp" ["-d"] []
+            case etmp of
+                Left _  -> die "Unable to create temp directory"
+                Right d -> do
+                    let dir = makeValid (init d) -- drop newline
+                    setCurrentDirectory dir
+                    return (dir, _cwd))
 
-   -- Always remember to clean up
-  (\(d, _cwd) -> do
+        -- Always remember to clean up
+        (\(d, _cwd) -> do
             setCurrentDirectory _cwd
             removeDirectoryRecursive d)
 
-   -- Now, get to work:
-  $ \(tmp, _cwd) -> do
+        -- Now, get to work:
+        $ \(tmp, _cwd) -> do
 
-   do x <- getArgs
-      case x of
-           ["--help"] -> help
-           ["-h"]     -> help
-           _          -> return ()
-   email     <- do
-       r <- getEnvMaybe "ARCH_HASKELL"
-       case r of
-            Nothing -> do hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
-                          return []
-            Just s  -> return s
+            x <- getArgs
+            case x of
+                ["--help"] -> help
+                ["-h"]     -> help
+                _          -> return ()
+            email <- do
+                r <- getEnvMaybe "ARCH_HASKELL"
+                case r of
+                    Nothing -> do
+                        hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
+                        return []
+                    Just s  -> return s
 
-   cabalfile <- findCabalFile _cwd tmp
-   hPutStrLn stderr $ "Using " ++ cabalfile
+            cabalfile <- findCabalFile _cwd tmp
+            hPutStrLn stderr $ "Using " ++ cabalfile
 
-   cabalsrc  <- readPackageDescription normal cabalfile
+            cabalsrc  <- readPackageDescription normal cabalfile
 
-   -- Create a package description with all configurations resolved.
-   sysProvides <- getDefaultSystemProvides
-   let finalcabal = preprocessCabal cabalsrc sysProvides
-   finalcabal' <- case finalcabal of
-                    Nothing -> die "Aborting..."
-                    Just f -> return f
-   let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
+            -- Create a package description with all configurations resolved.
+            sysProvides <- getDefaultSystemProvides
+            let finalcabal = preprocessCabal cabalsrc sysProvides
+            finalcabal' <- case finalcabal of
+                Nothing -> die "Aborting..."
+                Just f -> return f
+            let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
 
-   pkgbuild  <- getMD5 pkgbuild'
-   let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
-       doc = pkg2doc email apkgbuild
-       dir = arch_pkgname pkgbuild
+            pkgbuild  <- getMD5 pkgbuild'
+            let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
+                doc = pkg2doc email apkgbuild
+                dir = arch_pkgname pkgbuild
 
-   setCurrentDirectory _cwd
-   createDirectoryIfMissing False dir
-   setCurrentDirectory dir
+            setCurrentDirectory _cwd
+            createDirectoryIfMissing False dir
+            setCurrentDirectory dir
 
-   writeFile "PKGBUILD" (render doc ++ "\n")
+            writeFile "PKGBUILD" (render doc ++ "\n")
 
-   -- print pkgname.install
-   case hooks of
-        Nothing -> return ()
-        Just i  -> writeFile (install_hook_name (arch_pkgname pkgbuild)) i
+            -- print pkgname.install
+            case hooks of
+                Nothing -> return ()
+                Just i  -> writeFile (install_hook_name (arch_pkgname pkgbuild)) i
 
-   setCurrentDirectory _cwd
+            setCurrentDirectory _cwd
 
-   _ <- system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
-   tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
-   case tarred of
-        Left (_,s,_)  -> do
-            hPutStrLn stderr s
-            die "Unable to tar package"
-        Right _ -> putStrLn ("Created " ++ (_cwd </> dir <.> "tar.gz"))
+            _ <- system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
+            tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
+            case tarred of
+                Left (_,s,_)  -> do
+                    hPutStrLn stderr s
+                    die "Unable to tar package"
+                Right _ -> putStrLn ("Created " ++ (_cwd </> dir <.> "tar.gz"))
 
-   -- If the user created a .cabal2arch.log file, append log results there.
-   mh <- getEnvMaybe "HOME"
-   case mh of
-        Nothing   -> return ()
-        Just home -> do
-           b <- doesFileExist $ home </> ".cabal2arch.log"
-           if not b
-              then return ()
-              else do
+            -- If the user created a .cabal2arch.log file, append log results there.
+            mh <- getEnvMaybe "HOME"
+            case mh of
+                Nothing   -> return ()
+                Just home -> do
+                    b <- doesFileExist $ home </> ".cabal2arch.log"
+                    if not b
+                        then return ()
+                        else do
 
-               -- Log to build file.
-               appendFile (home </> ".cabal2arch.log") $ (show $ (,,)
-
-                   (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
-                   (arch_pkgdesc pkgbuild)
-                   (arch_url pkgbuild)) ++ "\n"
+                            -- Log to build file.
+                            appendFile (home </> ".cabal2arch.log") $ (show $ (,,)
+                                (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
+                                (arch_pkgdesc pkgbuild)
+                                (arch_url pkgbuild)) ++ "\n"
 
 ------------------------------------------------------------------------
 
@@ -151,23 +146,23 @@ main =
 --
 getMD5 :: PkgBuild -> IO PkgBuild
 getMD5 pkg = do
-   putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
-   eres <- readProcessWithExitCode "makepkg" ["-g"] (render $ disp pkg)
-   case eres of
-       (ExitFailure _,_,err) -> do
+    putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
+    eres <- readProcessWithExitCode "makepkg" ["-g"] (render $ disp pkg)
+    case eres of
+        (ExitFailure _,_,err) -> do
             hPutStrLn stderr err
             hPutStrLn stderr $ "makepkg encountered an error while calculating MD5."
             return pkg
-       (ExitSuccess,out,err) -> do
+        (ExitSuccess,out,err) -> do
             -- s should be "md5sums=(' ... ')"
             hPutStrLn stderr err
             if "md5sums=('" `isPrefixOf` out
-               then
-                 let md5sum = takeWhile (\x -> x `elem` "0123456789abcdef") $ drop 10 out
-                 in return pkg { arch_md5sum = ArchList [md5sum] }
-               else do
-                 hPutStrLn stderr $ "Incorrect output from makepkg."
-                 return pkg
+                then
+                    let md5sum = takeWhile (\x -> x `elem` "0123456789abcdef") $ drop 10 out
+                    in return pkg { arch_md5sum = ArchList [md5sum] }
+                else do
+                    hPutStrLn stderr $ "Incorrect output from makepkg."
+                    return pkg
 
 -- Return the path to a .cabal file.
 -- If not arguments are specified, use ".",
@@ -176,42 +171,39 @@ getMD5 pkg = do
 --
 findCabalFile :: FilePath -> FilePath -> IO FilePath
 findCabalFile _cwd tmp = do
-   args <- getArgs
-   let epath | null args
+    args <- getArgs
+    let epath | null args
                 = Right _cwd
-             | "http://" `isPrefixOf` file
+            | "http://" `isPrefixOf` file
                 = Left file
-             | ".cabal"  `isSuffixOf` file
+            | ".cabal"  `isSuffixOf` file
                 = Right (makeValid (joinPath [_cwd,file]))
-             | otherwise  -- a directory path
-                = Right file
+            | otherwise  -- a directory path
+                = Right file where file = head args
 
-         where file = head args
+    -- download url to .cabal
+    case epath of
+        Left url -> do
+            eres <- myReadProcess "wget" [url] []
+            case eres of
+                Left (_,s,_) -> do
+                    hPutStrLn stderr s
+                    die $ "Couldn't download .cabal file: " ++ show url
+                Right _ -> findPackageDesc tmp -- tmp dir
 
-   -- download url to .cabal
-   case epath of
-       Left url -> do
-        eres <- myReadProcess "wget" [url] []
-        case eres of
-           Left (_,s,_) -> do
-                hPutStrLn stderr s
-                die $ "Couldn't download .cabal file: " ++ show url
-           Right _ ->
-                findPackageDesc tmp -- tmp dir
+        -- it might be a .cabal file
+        Right f | ".cabal" `isSuffixOf` f -> do
+            b <- doesFileExist f
+            if not b
+                then die $ ".cabal file doesn't exist: " ++ show f
+                else return f
 
-   -- it might be a .cabal file
-       Right f | ".cabal" `isSuffixOf` f -> do
-         b <- doesFileExist f
-         if not b
-            then die $ ".cabal file doesn't exist: " ++ show f
-            else return f
-
-   -- or assume it is a dir to a file:
-       Right dir -> do
-         b <- doesDirectoryExist dir
-         if not b
-            then die $ "directory doesn't exist: " ++ show dir
-            else findPackageDesc dir
+        -- or assume it is a dir to a file:
+        Right dir -> do
+            b <- doesDirectoryExist dir
+            if not b
+                then die $ "directory doesn't exist: " ++ show dir
+                else findPackageDesc dir
 
 ------------------------------------------------------------------------
 -- Some extras
@@ -219,23 +211,23 @@ findCabalFile _cwd tmp = do
 
 help :: IO a
 help = do
- hPutStrLn stderr $ unlines
-    [ "cabal2arch: [-h|--help] [directory|url]"
-    , ""
-    , "  Generate PKGBUILD for the .cabal file in <directory> or at <url>"
-    , ""
-    , "Usage:"
-    , "   -h    Display help message"
-    , ""
-    , "Arguments: <directory>"
-    , "              Look for .cabal file in <directory>"
-    , "              If directory is empty, use pwd"
-    , "           <file.cabal>"
-    , "              Use .cabal file as source"
-    , "           <url>"
-    , "              Download .cabal file from <url>"
-    ]
- exitWith ExitSuccess
+    hPutStrLn stderr $ unlines
+        [ "cabal2arch: [-h|--help] [directory|url]"
+        , ""
+        , "  Generate PKGBUILD for the .cabal file in <directory> or at <url>"
+        , ""
+        , "Usage:"
+        , "   -h    Display help message"
+        , ""
+        , "Arguments: <directory>"
+        , "              Look for .cabal file in <directory>"
+        , "              If directory is empty, use pwd"
+        , "           <file.cabal>"
+        , "              Use .cabal file as source"
+        , "           <url>"
+        , "              Download .cabal file from <url>"
+        ]
+    exitWith ExitSuccess
 
 ------------------------------------------------------------------------
 
@@ -272,7 +264,7 @@ myReadProcess cmd args input = CE.handle (return . handler) $ do
     when (not (null input)) $ hPutStr inh input
     takeMVar outMVar
     takeMVar errMVar
-    ex     <- CE.catch (waitForProcess pid) ((const :: a -> CE.SomeException -> a) $ return ExitSuccess)
+    ex <- CE.catch (waitForProcess pid) ((const :: a -> CE.SomeException -> a) $ return ExitSuccess)
     hClose outh
     hClose inh          -- done with stdin
     hClose errh         -- ignore stderr
@@ -281,7 +273,6 @@ myReadProcess cmd args input = CE.handle (return . handler) $ do
         ExitSuccess   -> Right output
         ExitFailure _ -> Left (ex, errput, output)
 
-  where
-    handler (ExitFailure e) = Left (ExitFailure e,"","")
-    handler e                   = Left (ExitFailure 1, show e, "")
-
+    where
+        handler (ExitFailure e) = Left (ExitFailure e,"","")
+        handler e               = Left (ExitFailure 1, show e, "")
