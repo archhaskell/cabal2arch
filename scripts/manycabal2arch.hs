@@ -41,9 +41,9 @@ exportPackage dot email sysProvides p = do
     Nothing -> return ()
     Just p' -> do
       let (pkg, script) = cabal2pkg p' sysProvides
-          pkgname = trace ("Converting package " ++ arch_pkgname pkg) (arch_pkgname pkg)
+          pkgname = trace ("Converting package " ++ hkgName pkg) (hkgName pkg)
       pkgbuild  <- getMD5 pkg
-      let apkgbuild = AnnotatedPkgBuild { pkgBuiltWith = Just version, pkgHeader = comment, pkgBody = pkgbuild }
+      let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
           rawpkgbuild = (render $ pkg2doc email apkgbuild) ++ "\n"
 
       createDirectoryIfMissing True (dot </> pkgname)
@@ -76,19 +76,11 @@ main = do
 getEnvMaybe :: String -> IO (Maybe String)
 getEnvMaybe name = CE.handle ((const :: a -> CE.SomeException -> a) $ return Nothing) (Just `fmap` getEnv name)
 
-comment :: String
-comment = render $ vcat
- [ text "# Note: we list all package dependencies."
- , text "# Your package tool should understand 'provides' syntax"
- , text "#"
- , text "# Keep up to date on http://archhaskell.wordpress.com/"
- , text "#"]
-
 -- | Given an abstract pkgbuild, run "makepkg -g" to compute md5
 -- of source files (possibly cached locally), and modify the PkgBuild
 -- accordingly.
 --
-getMD5 :: PkgBuild -> IO PkgBuild
+getMD5 :: AnnotatedPkgBuild -> IO AnnotatedPkgBuild
 getMD5 pkg = do
    putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
    eres <- readProcessWithExitCode "makepkg" ["-g"] $ display pkg
@@ -103,7 +95,7 @@ getMD5 pkg = do
             if "md5sums=('" `isPrefixOf` out
                then
                  let md5sum = takeWhile (\x -> x `elem` "0123456789abcdef") $ drop 10 out
-                 in return pkg { arch_md5sum = ArchList [md5sum] }
+                 in return pkg { pkgBody = (pkgBody pkg) { arch_md5sum = ArchList [md5sum] } }
                else do
                  hPutStrLn stderr $ "Incorrect output from makepkg."
                  return pkg

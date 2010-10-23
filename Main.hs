@@ -17,6 +17,7 @@
 -- rather than makedepends
 
 import Distribution.PackageDescription.Parse
+import Distribution.PackageDescription
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
 import Distribution.Text
@@ -25,12 +26,14 @@ import Distribution.Text
 import Distribution.ArchLinux.PkgBuild
 import Distribution.ArchLinux.CabalTranslation
 import Distribution.ArchLinux.SystemProvides
+import Distribution.ArchLinux.HackageTranslation
 
 import Control.Monad
 import Control.Concurrent
 import qualified Control.Exception as CE
 
 import Data.List
+import qualified Data.ByteString.Lazy as Bytes
 
 import Text.PrettyPrint
 
@@ -161,7 +164,39 @@ subCmd (CmdLnConvertOne cabalLoc) =
                                 (arch_pkgdesc pkgbuild)
                                 (arch_url pkgbuild)) ++ "\n"
 
-subCmd (CmdLnConvertMany {}) = error "TBD!!!"
+subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc) = do
+    pkglist <- readFile pkgListLoc
+    tarball <- Bytes.readFile tarballLoc
+    repo <- canonicalizePath repoLoc
+    email <- do
+        r <- getEnvMaybe "ARCH_HASKELL"
+        case r of
+            Nothing -> do
+                hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
+                return []
+            Just s  -> return s
+    sysProvides <- getDefaultSystemProvides
+    let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
+    _ <- mapM (exportPackage repo email sysProvides) cabals
+    return ()
+
+exportPackage :: FilePath -> String -> SystemProvides -> GenericPackageDescription -> IO ()
+exportPackage dot email sysProvides p = do
+    let q = preprocessCabal p sysProvides
+    case q of
+        Nothing -> return ()
+        Just p' -> do
+            let (pkg, script) = cabal2pkg p' sysProvides
+                pkgname = hkgName pkg
+            pkgbuild  <- getMD5 pkg
+            let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
+                rawpkgbuild = (render $ pkg2doc email apkgbuild) ++ "\n"
+
+            createDirectoryIfMissing True (dot </> pkgname)
+            writeFile (dot </> pkgname </> "PKGBUILD") rawpkgbuild
+            case script of
+                Nothing -> return ()
+                Just s -> writeFile (dot </> pkgname </> pkgname ++ ".install") s
 
 ------------------------------------------------------------------------
 
