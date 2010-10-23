@@ -73,7 +73,10 @@ cmdLnArgs = modes [cmdLnConvertOne, cmdLnConvertMany]
     &= summary "cabal2arch: Convert .cabal file to ArchLinux source package"
 
 main :: IO ()
-main =
+main = cmdArgs cmdLnArgs >>= subCmd
+
+subCmd :: CmdLnArgs -> IO ()
+subCmd (CmdLnConvertOne cabalLoc) =
     CE.bracket
         -- We do all our work in a temp directory
         (do _cwd  <- getCurrentDirectory
@@ -93,7 +96,7 @@ main =
         -- Now, get to work:
         $ \(tmp, _cwd) -> do
 
-            myArgs <- cmdArgs cmdLnArgs
+            -- myArgs <- cmdArgs cmdLnArgs
             email <- do
                 r <- getEnvMaybe "ARCH_HASKELL"
                 case r of
@@ -102,7 +105,7 @@ main =
                         return []
                     Just s  -> return s
 
-            cabalfile <- findCabalFile myArgs _cwd tmp
+            cabalfile <- findCabalFile cabalLoc _cwd tmp
             hPutStrLn stderr $ "Using " ++ cabalfile
 
             cabalsrc  <- readPackageDescription normal cabalfile
@@ -158,6 +161,8 @@ main =
                                 (arch_pkgdesc pkgbuild)
                                 (arch_url pkgbuild)) ++ "\n"
 
+subCmd (CmdLnConvertMany {}) = error "TBD!!!"
+
 ------------------------------------------------------------------------
 
 -- | Given an abstract pkgbuild, run "makepkg -g" to compute md5
@@ -189,9 +194,8 @@ getMD5 pkg = do
 -- if the argument looks like a url, download that
 -- otherwise, assume its a directory
 --
-findCabalFile :: CmdLnArgs -> FilePath -> FilePath -> IO FilePath
-findCabalFile (CmdLnConvertMany {}) _ _ = error "TBD!!!"
-findCabalFile _args@(CmdLnConvertOne {}) _cwd tmp = do
+findCabalFile :: String -> FilePath -> FilePath -> IO FilePath
+findCabalFile file _cwd tmp = do
     let epath
             | null file
                 = Right _cwd
@@ -200,7 +204,7 @@ findCabalFile _args@(CmdLnConvertOne {}) _cwd tmp = do
             | ".cabal"  `isSuffixOf` file
                 = Right (makeValid (joinPath [_cwd,file]))
             | otherwise  -- a directory path
-                = Right file where file = argCabalFile _args
+                = Right file
 
     -- download url to .cabal
     case epath of
