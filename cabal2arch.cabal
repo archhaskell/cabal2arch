@@ -30,13 +30,3 @@ executable cabal2arch
         filepath,
         archlinux >= 0.3.3,
         cmdargs
-
-executable manycabal2arch
-    main-is:            scripts/manycabal2arch.hs
-    ghc-options:        -Wall
-
-    build-depends:
-        base >=4 && <6,
-        directory,
-        filepath,
-        archlinux >= 0.3.3
