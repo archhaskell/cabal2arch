@@ -4,14 +4,33 @@ cabal2arch
 cabal2arch is a tool used to convert CABAL ([Common Architecture for Building
 Applications and Libraries][1]) files into [ArchLinux][2] source packages.
 
+Commands
+--------
+
+cabal2arch has two subcommands:
+
+1. `conv`
+
+    Convert a single package description (CABAL file) into a ArchLinux source
+    package.
+
+1. `convtar`
+
+    Given a package list and a tarball of package descriptions create tree of
+    ArchLinux source packages for the listed packages.  The package list must
+    contain lines of the format "<pkgname> <version>".
+
 Example usage
 -------------
 
-It takes a single argument, it can be either a file, a directory (containing a
-single CABAL file), or the URL of a CABAL file.
+Examples for `conv`:
 
-    % cabal2arch puremd5.cabal
-    % cabal2arch http://hackage.haskell.org/packages/archive/pureMD5/2.1.0.1/pureMD5.cabal
+    % cabal2arch conv puremd5.cabal
+    % cabal2arch conv http://hackage.haskell.org/packages/archive/pureMD5/2.1.0.1/pureMD5.cabal
+
+Example for `convtar`:
+
+    % cabal2arch convtar PKGLIST 00-index.tar my-abs
 
 Build and install
 -----------------
