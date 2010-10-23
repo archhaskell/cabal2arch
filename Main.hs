@@ -142,7 +142,7 @@ main =
 
                             -- Log to build file.
                             appendFile (home </> ".cabal2arch.log") $ (show $ (,,)
-                                (arch_pkgname pkgbuild ++ "-" ++ (render . disp $ arch_pkgver pkgbuild))
+                                (arch_pkgname pkgbuild ++ "-" ++ (display $ arch_pkgver pkgbuild))
                                 (arch_pkgdesc pkgbuild)
                                 (arch_url pkgbuild)) ++ "\n"
 
@@ -155,7 +155,7 @@ main =
 getMD5 :: PkgBuild -> IO PkgBuild
 getMD5 pkg = do
     putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
-    eres <- readProcessWithExitCode "makepkg" ["-g"] (render $ disp pkg)
+    eres <- readProcessWithExitCode "makepkg" ["-g"] $ display pkg
     case eres of
         (ExitFailure _,_,err) -> do
             hPutStrLn stderr err

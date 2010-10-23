@@ -91,7 +91,7 @@ comment = render $ vcat
 getMD5 :: PkgBuild -> IO PkgBuild
 getMD5 pkg = do
    putStrLn "Feeding the PKGBUILD to `makepkg -g`..."
-   eres <- readProcessWithExitCode "makepkg" ["-g"] (render $ disp pkg)
+   eres <- readProcessWithExitCode "makepkg" ["-g"] $ display pkg
    case eres of
        (ExitFailure _,_,err) -> do
             hPutStrLn stderr err
