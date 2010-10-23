@@ -45,11 +45,30 @@ import System.Process hiding(cwd)
 
 import System.Console.CmdArgs
 
-data CmdLnArgs = CmdLnArgs { argCabalFile :: String }
+data CmdLnArgs
+    = CmdLnConvertOne { argCabalFile :: String }
+    | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath }
     deriving (Data, Typeable)
 
+cmdLnConvertOne :: CmdLnArgs
+cmdLnConvertOne = CmdLnConvertOne { argCabalFile = "" &= argPos 0 &= typ "FILE|DIR|URL" }
+    &= auto &= name "conv" &= help "Convert a single CABAL file."
+
+cmdLnConvertMany :: CmdLnArgs
+cmdLnConvertMany = CmdLnConvertMany
+    { argPkgList = def &= argPos 0 &= typFile
+    , argTarBall = def &= argPos 1 &= typFile
+    , argRepo = def &= argPos 2 &= typDir
+    } &= name "convtar" &= help "Convert a tarball of CABAL files into an ABS tree."
+    &= details
+        [ "  cabal2arch convtar list tar abs"
+        , "'list' is a file consisting of lines of the form \"<pkg name> <version>\"."
+        , "'tar' is a tar ball of package descriptions (CABAL files) like the one published on Hackage:", "  http://hackage.haskell.org/packages/archive/00-index.tar.gz"
+        , "'abs' is a directory where the ABS tree will be created."
+        ]
+
 cmdLnArgs :: CmdLnArgs
-cmdLnArgs = CmdLnArgs { argCabalFile = "" &= argPos 0 &= typ "DIR|URL" }
+cmdLnArgs = modes [cmdLnConvertOne, cmdLnConvertMany]
     &= program "cabal2arch"
     &= summary "cabal2arch: Convert .cabal file to ArchLinux source package"
 
@@ -171,7 +190,8 @@ getMD5 pkg = do
 -- otherwise, assume its a directory
 --
 findCabalFile :: CmdLnArgs -> FilePath -> FilePath -> IO FilePath
-findCabalFile _args _cwd tmp = do
+findCabalFile (CmdLnConvertMany {}) _ _ = error "TBD!!!"
+findCabalFile _args@(CmdLnConvertOne {}) _cwd tmp = do
     let epath
             | null file
                 = Right _cwd
