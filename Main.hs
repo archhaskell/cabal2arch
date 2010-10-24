@@ -191,12 +191,12 @@ exportPackage dot email sysProvides p = do
             pkgbuild  <- getMD5 pkg
             let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
                 rawpkgbuild = (render $ pkg2doc email apkgbuild) ++ "\n"
-
+                archname = arch_pkgname (pkgBody pkgbuild)
             createDirectoryIfMissing True (dot </> pkgname)
             writeFile (dot </> pkgname </> "PKGBUILD") rawpkgbuild
             case script of
                 Nothing -> return ()
-                Just s -> writeFile (dot </> pkgname </> pkgname ++ ".install") s
+                Just s -> writeFile (dot </> pkgname </> archname ++ ".install") s
 
 ------------------------------------------------------------------------
 
