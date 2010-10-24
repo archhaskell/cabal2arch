@@ -186,16 +186,15 @@ exportPackage dot email sysProvides p = do
         Nothing -> return ()
         Just p' -> do
             let (pkg, script) = cabal2pkg p' sysProvides
-                pkgname = hkgName pkg
+                pkgname = arch_pkgname (pkgBody pkg)
             pkgbuild  <- getMD5 pkg
             let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
                 rawpkgbuild = (render $ pkg2doc email apkgbuild) ++ "\n"
-                archname = arch_pkgname (pkgBody pkgbuild)
             createDirectoryIfMissing True (dot </> pkgname)
             writeFile (dot </> pkgname </> "PKGBUILD") rawpkgbuild
             case script of
                 Nothing -> return ()
-                Just s -> writeFile (dot </> pkgname </> (install_hook_name archname)) s
+                Just s -> writeFile (dot </> pkgname </> (install_hook_name pkgname)) s
 
 ------------------------------------------------------------------------
 
