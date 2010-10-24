@@ -196,7 +196,7 @@ exportPackage dot email sysProvides p = do
             writeFile (dot </> pkgname </> "PKGBUILD") rawpkgbuild
             case script of
                 Nothing -> return ()
-                Just s -> writeFile (dot </> pkgname </> archname ++ ".install") s
+                Just s -> writeFile (dot </> pkgname </> (install_hook_name archname)) s
 
 ------------------------------------------------------------------------
 
