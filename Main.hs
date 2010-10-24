@@ -177,8 +177,7 @@ subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc) = do
             Just s  -> return s
     sysProvides <- getDefaultSystemProvides
     let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
-    _ <- mapM (exportPackage repo email sysProvides) cabals
-    return ()
+    mapM_ (exportPackage repo email sysProvides) cabals
 
 exportPackage :: FilePath -> String -> SystemProvides -> GenericPackageDescription -> IO ()
 exportPackage dot email sysProvides p = do
