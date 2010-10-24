@@ -28,5 +28,5 @@ executable cabal2arch
         bytestring,
         Cabal > 1.8,
         filepath,
-        archlinux >= 0.3.3,
+        archlinux >= 0.3.5,
         cmdargs
