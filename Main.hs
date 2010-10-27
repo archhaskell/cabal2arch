@@ -49,13 +49,15 @@ import System.Process hiding(cwd)
 import System.Console.CmdArgs
 
 data CmdLnArgs
-    = CmdLnConvertOne { argCabalFile :: String }
+    = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool }
     | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath }
     deriving (Data, Typeable)
 
 cmdLnConvertOne :: CmdLnArgs
-cmdLnConvertOne = CmdLnConvertOne { argCabalFile = "" &= argPos 0 &= typ "FILE|DIR|URL" }
-    &= auto &= name "conv" &= help "Convert a single CABAL file."
+cmdLnConvertOne = CmdLnConvertOne
+    { argCabalFile = "" &= argPos 0 &= typ "FILE|DIR|URL"
+    , argCreateTar = False &= name "tar" &= explicit &= help "Create a tar-ball for the source package."
+    } &= auto &= name "conv" &= help "Convert a single CABAL file."
 
 cmdLnConvertMany :: CmdLnArgs
 cmdLnConvertMany = CmdLnConvertMany
@@ -79,7 +81,7 @@ main :: IO ()
 main = cmdArgs cmdLnArgs >>= subCmd
 
 subCmd :: CmdLnArgs -> IO ()
-subCmd (CmdLnConvertOne cabalLoc) =
+subCmd (CmdLnConvertOne cabalLoc createTar) =
     CE.bracket
         -- We do all our work in a temp directory
         (do _cwd  <- getCurrentDirectory
@@ -141,12 +143,13 @@ subCmd (CmdLnConvertOne cabalLoc) =
             setCurrentDirectory _cwd
 
             _ <- system $ "rm -rf " ++ dir </> "{pkg,src,*.tar.gz}"
-            tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
-            case tarred of
-                Left (_,s,_)  -> do
-                    hPutStrLn stderr s
-                    die "Unable to tar package"
-                Right _ -> putStrLn ("Created " ++ (_cwd </> dir <.> "tar.gz"))
+            when createTar $ do
+                tarred <- myReadProcess "tar" ["-zcvvf",(dir <.> "tar.gz"), dir] []
+                case tarred of
+                    Left (_,s,_)  -> do
+                        hPutStrLn stderr s
+                        die "Unable to tar package"
+                    Right _ -> putStrLn ("Created " ++ (_cwd </> dir <.> "tar.gz"))
 
             -- If the user created a .cabal2arch.log file, append log results there.
             mh <- getEnvMaybe "HOME"
