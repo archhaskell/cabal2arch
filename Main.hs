@@ -38,6 +38,7 @@ import qualified Data.ByteString.Lazy as Bytes
 import Text.PrettyPrint
 
 import Paths_cabal2arch
+import Data.Version (showVersion)
 
 import System.Directory
 import System.Environment
@@ -75,7 +76,7 @@ cmdLnConvertMany = CmdLnConvertMany
 cmdLnArgs :: CmdLnArgs
 cmdLnArgs = modes [cmdLnConvertOne, cmdLnConvertMany]
     &= program "cabal2arch"
-    &= summary "cabal2arch: Convert .cabal file to ArchLinux source package"
+    &= summary ("cabal2arch, v. " ++ showVersion version ++ ": Convert .cabal file to ArchLinux source package")
 
 main :: IO ()
 main = cmdArgs cmdLnArgs >>= subCmd
