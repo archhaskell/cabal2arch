@@ -8,14 +8,54 @@
 
 module Cabal2Arch.Util where
 
+import Data.List
+
 import Control.Monad
 import Control.Concurrent
 import qualified Control.Exception as CE
 
+import System.Directory
 import System.Environment
 import System.Exit
+import System.FilePath
 import System.IO
 import System.Process hiding(cwd)
+
+import Control.Monad.Trans
+import Control.Monad.Error
+import Distribution.ArchLinux.SystemProvides
+
+type IOErr a = ErrorT String IO a
+
+------------------------------------------------------------------------
+-- Read a file from a URL
+--
+getFromURL :: String -> IOErr String
+getFromURL url = do
+   res <- liftIO (myReadProcess "curl" ["-f", url] "")
+   case res of
+     Left _ -> throwError ("Unable to retrieve " ++ url)
+     Right s -> liftIO (return s)
+
+-- Read from a file
+getFromFile :: String -> IOErr String
+getFromFile path = do
+   b <- liftIO (doesFileExist path)
+   if not b
+     then throwError ("File " ++ path ++ "does not exist!")
+     else liftIO (readFile path)
+
+getSystemProvidesFromPath :: String -> IOErr SystemProvides
+getSystemProvidesFromPath dir
+  | null dir = liftIO getDefaultSystemProvides
+  | "http://" `isPrefixOf` dir || "ftp://" `isPrefixOf` dir = do
+     fc <- getFromURL (dir </> "ghc-provides.txt")
+     ft <- getFromURL (dir </> "library-providers.txt")
+     return (parseSystemProvides fc ft)
+  | otherwise = do
+     fc <- getFromFile (dir </> "ghc-provides.txt")
+     ft <- getFromFile (dir </> "library-providers.txt")
+     return (parseSystemProvides fc ft)
 
 ------------------------------------------------------------------------
 -- Some extras
