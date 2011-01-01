@@ -42,7 +42,7 @@ getFromFile :: String -> IOErr String
 getFromFile path = do
    b <- liftIO (doesFileExist path)
    if not b
-     then throwError ("File " ++ path ++ "does not exist!")
+     then throwError ("File " ++ path ++ " does not exist!")
      else liftIO (readFile path)
 
 getSystemProvidesFromPath :: String -> IOErr SystemProvides
