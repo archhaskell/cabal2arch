@@ -30,3 +30,6 @@ executable cabal2arch
         filepath,
         archlinux >= 0.3.5,
         cmdargs
+
+    other-modules:
+        Cabal2Arch.Util
