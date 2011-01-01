@@ -17,7 +17,7 @@
 -- rather than makedepends
 
 import Distribution.PackageDescription.Parse
-import Distribution.PackageDescription
+import Distribution.PackageDescription (GenericPackageDescription)
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
 import Distribution.Text
@@ -29,6 +29,7 @@ import Distribution.ArchLinux.SystemProvides
 import Distribution.ArchLinux.HackageTranslation
 
 import Control.Monad
+import Control.Monad.Error
 import qualified Control.Exception as CE
 
 import Data.List
@@ -49,14 +50,15 @@ import System.Console.CmdArgs
 import Cabal2Arch.Util
 
 data CmdLnArgs
-    = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool }
-    | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath }
+    = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool, argDataFiles :: String }
+    | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath, argDataFiles :: String }
     deriving (Data, Typeable)
 
 cmdLnConvertOne :: CmdLnArgs
 cmdLnConvertOne = CmdLnConvertOne
     { argCabalFile = "" &= argPos 0 &= typ "FILE|DIR|URL"
     , argCreateTar = False &= name "tar" &= explicit &= help "Create a tar-ball for the source package."
+    , argDataFiles = "" &= name "sysinfo" &= typDir &= explicit &= help "Use custom system information files."
     } &= auto &= name "conv" &= help "Convert a single CABAL file."
 
 cmdLnConvertMany :: CmdLnArgs
@@ -64,6 +66,7 @@ cmdLnConvertMany = CmdLnConvertMany
     { argPkgList = def &= argPos 0 &= typFile
     , argTarBall = def &= argPos 1 &= typFile
     , argRepo = def &= argPos 2 &= typDir
+    , argDataFiles = "" &= name "sysinfo" &= typDir &= explicit &= help "Use custom system information files."
     } &= name "convtar" &= help "Convert a tarball of CABAL files into an ABS tree."
     &= details
         [ "  cabal2arch convtar list tar abs"
@@ -81,7 +84,7 @@ main :: IO ()
 main = cmdArgs cmdLnArgs >>= subCmd
 
 subCmd :: CmdLnArgs -> IO ()
-subCmd (CmdLnConvertOne cabalLoc createTar) =
+subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
     CE.bracket
         -- We do all our work in a temp directory
         (do _cwd  <- getCurrentDirectory
@@ -116,7 +119,10 @@ subCmd (CmdLnConvertOne cabalLoc createTar) =
             cabalsrc  <- readPackageDescription normal cabalfile
 
             -- Create a package description with all configurations resolved.
-            sysProvides <- getDefaultSystemProvides
+            maybeSysProvides <- runErrorT $ getSystemProvidesFromPath dataFiles
+            sysProvides <- case maybeSysProvides of
+                Left s -> die s
+                Right sp -> return sp
             let finalcabal = preprocessCabal cabalsrc sysProvides
             finalcabal' <- case finalcabal of
                 Nothing -> die "Aborting..."
@@ -167,7 +173,7 @@ subCmd (CmdLnConvertOne cabalLoc createTar) =
                                 (arch_pkgdesc pkgbuild)
                                 (arch_url pkgbuild)) ++ "\n"
 
-subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc) = do
+subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc dataFiles) = do
     pkglist <- readFile pkgListLoc
     tarball <- Bytes.readFile tarballLoc
     repo <- canonicalizePath repoLoc
@@ -178,7 +184,10 @@ subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc) = do
                 hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
                 return []
             Just s  -> return s
-    sysProvides <- getDefaultSystemProvides
+    maybeSysProvides <- runErrorT $ getSystemProvidesFromPath dataFiles
+    sysProvides <- case maybeSysProvides of
+        Left s -> die s
+        Right sp -> return sp
     let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
     mapM_ (exportPackage repo email sysProvides) cabals
 
