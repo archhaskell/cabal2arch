@@ -50,12 +50,14 @@ getSystemProvidesFromPath dir
   | null dir = liftIO getDefaultSystemProvides
   | "http://" `isPrefixOf` dir || "ftp://" `isPrefixOf` dir = do
      fc <- getFromURL (dir </> "ghc-provides.txt")
+     fp <- getFromURL (dir </> "platform-provides.txt")
      ft <- getFromURL (dir </> "library-providers.txt")
-     return (parseSystemProvides fc ft)
+     return (parseSystemProvides fc fp ft)
   | otherwise = do
      fc <- getFromFile (dir </> "ghc-provides.txt")
+     fp <- getFromFile (dir </> "platform-provides.txt")
      ft <- getFromFile (dir </> "library-providers.txt")
-     return (parseSystemProvides fc ft)
+     return (parseSystemProvides fc fp ft)
 
 ------------------------------------------------------------------------
 -- Some extras
