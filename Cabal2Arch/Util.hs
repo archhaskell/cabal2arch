@@ -25,6 +25,8 @@ import Control.Monad.Trans
 import Control.Monad.Error
 import Distribution.ArchLinux.SystemProvides
 
+import Paths_cabal2arch
+
 type IOErr a = ErrorT String IO a
 
 ------------------------------------------------------------------------
@@ -45,9 +47,12 @@ getFromFile path = do
      then throwError ("File " ++ path ++ " does not exist!")
      else liftIO (readFile path)
 
+-- getDefaultSystemProvides = getSystemProvidesFromPath "http://andromeda.kiwilight.com/~remy.oudompheng/arch-haskell/default"
+getDefaultSystemProvides = getSystemProvidesFromPath =<< (liftIO $ getDataFileName "data")
+
 getSystemProvidesFromPath :: String -> IOErr SystemProvides
 getSystemProvidesFromPath dir
-  | null dir = liftIO getDefaultSystemProvides
+  | null dir = getDefaultSystemProvides
   | "http://" `isPrefixOf` dir || "ftp://" `isPrefixOf` dir = do
      fc <- getFromURL (dir </> "ghc-provides.txt")
      fp <- getFromURL (dir </> "platform-provides.txt")
