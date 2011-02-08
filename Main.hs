@@ -123,10 +123,10 @@ subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
             sysProvides <- case maybeSysProvides of
                 Left s -> die s
                 Right sp -> return sp
-            let finalcabal = preprocessCabal cabalsrc sysProvides
+            let finalcabal = preprocessCabal cabalsrc [] sysProvides
             finalcabal' <- case finalcabal of
                 Nothing -> die "Aborting..."
-                Just f -> return f
+                Just (f, _) -> return f
             let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
 
             apkgbuild' <- getMD5 pkgbuild'
@@ -193,10 +193,10 @@ subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc dataFiles) = do
 
 exportPackage :: FilePath -> String -> SystemProvides -> GenericPackageDescription -> IO ()
 exportPackage dot email sysProvides p = do
-    let q = preprocessCabal p sysProvides
+    let q = preprocessCabal p [] sysProvides
     case q of
         Nothing -> return ()
-        Just p' -> do
+        Just (p', _) -> do
             let (pkg, script) = cabal2pkg p' sysProvides
                 pkgname = arch_pkgname (pkgBody pkg)
             pkgbuild  <- getMD5 pkg
