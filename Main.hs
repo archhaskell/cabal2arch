@@ -17,7 +17,7 @@
 -- rather than makedepends
 
 import Distribution.PackageDescription.Parse
-import Distribution.PackageDescription (GenericPackageDescription)
+import Distribution.PackageDescription (GenericPackageDescription, FlagName(..))
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
 import Distribution.Text
@@ -50,7 +50,7 @@ import System.Console.CmdArgs
 import Cabal2Arch.Util
 
 data CmdLnArgs
-    = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool, argDataFiles :: String }
+    = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool, argDataFiles :: String, argFlags :: [String] }
     | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath, argDataFiles :: String }
     deriving (Data, Typeable)
 
@@ -59,6 +59,7 @@ cmdLnConvertOne = CmdLnConvertOne
     { argCabalFile = "" &= argPos 0 &= typ "FILE|DIR|URL"
     , argCreateTar = False &= name "tar" &= explicit &= help "Create a tar-ball for the source package."
     , argDataFiles = "" &= name "sysinfo" &= typDir &= explicit &= help "Use custom system information files."
+    , argFlags = [] &= name "flag" &= explicit &= typ "FLAG" &= help "Build flag to pass through to the PKGBUILD. Can be specified many times."
     } &= auto &= name "conv" &= help "Convert a single CABAL file."
 
 cmdLnConvertMany :: CmdLnArgs
@@ -84,7 +85,7 @@ main :: IO ()
 main = cmdArgs cmdLnArgs >>= subCmd
 
 subCmd :: CmdLnArgs -> IO ()
-subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
+subCmd (CmdLnConvertOne cabalLoc createTar dataFiles flags) =
     CE.bracket
         -- We do all our work in a temp directory
         (do _cwd  <- getCurrentDirectory
@@ -123,7 +124,12 @@ subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
             sysProvides <- case maybeSysProvides of
                 Left s -> die s
                 Right sp -> return sp
-            let finalcabal = preprocessCabal cabalsrc [] sysProvides
+            let parseFlag f = let
+                        v = not $ "-" `isPrefixOf` f
+                        n = if v then f else (tail f)
+                    in (FlagName n, v)
+            let flags' = map parseFlag flags
+            let finalcabal = preprocessCabal cabalsrc flags' sysProvides
             (finalcabal', cblflags) <- maybe (die "Aborting...") (\ f -> return (f)) finalcabal
             let (pkgbuild', hooks) = cabal2pkg finalcabal' cblflags sysProvides
 
