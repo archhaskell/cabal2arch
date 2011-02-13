@@ -124,10 +124,8 @@ subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
                 Left s -> die s
                 Right sp -> return sp
             let finalcabal = preprocessCabal cabalsrc [] sysProvides
-            finalcabal' <- case finalcabal of
-                Nothing -> die "Aborting..."
-                Just (f, _) -> return f
-            let (pkgbuild', hooks) = cabal2pkg finalcabal' sysProvides
+            (finalcabal', cblflags) <- maybe (die "Aborting...") (\ f -> return (f)) finalcabal
+            let (pkgbuild', hooks) = cabal2pkg finalcabal' cblflags sysProvides
 
             apkgbuild' <- getMD5 pkgbuild'
             let apkgbuild = apkgbuild' { pkgBuiltWith = Just version }
@@ -196,8 +194,8 @@ exportPackage dot email sysProvides p = do
     let q = preprocessCabal p [] sysProvides
     case q of
         Nothing -> return ()
-        Just (p', _) -> do
-            let (pkg, script) = cabal2pkg p' sysProvides
+        Just (p', f) -> do
+            let (pkg, script) = cabal2pkg p' f sysProvides
                 pkgname = arch_pkgname (pkgBody pkg)
             pkgbuild  <- getMD5 pkg
             let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
