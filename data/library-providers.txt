@@ -18,6 +18,7 @@ freetype   freetype2
 glib       glib2
 wmflite    libwmf
 il         devil
+crypt      glibc
 
 jpeg       libjpeg
 ldap       libldap
