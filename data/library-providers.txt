@@ -1,111 +1,98 @@
-# This file lists external library dependencies and the ArchLinux
-# packages providing them. For example, if the openssl package
-# provides libssl.so, there should be a line
 #
-# ssl openssl
+# This file lists external library dependencies and the ArchLinux packages
+# providing them.
 #
 
-Imlib2     imlib2
-SDL        sdl
-adns       adns
-alut       freealut
-bz2        bzip2
-cblas      blas
-crack      cracklib
-crypto     openssl
-curl       curl
-freetype   freetype2
-glib       glib2
-wmflite    libwmf
-il         devil
-crypt      glibc
-
-jpeg       libjpeg
-ldap       libldap
-pcap       libpcap
-png        libpng
-x11        libx11
-xrandr     libxrandr
-xml2       libxml2
-libxml     libxml2
-exif       libexif
-tiff       libtiff
-sndfile    libsndfile
-gcrypt     libgcrypt
-gnutls     gnutls
-gnutls-extra      gnutls
-fftw3      fftw
-
-pq         postgresql
-ssl        openssl
-wx         wxgtk
-odbc       unixodbc
-z          zlib
-curses     ncurses
-xslt       libxslt
-uuid       e2fsprogs
-ev         libev
-pthread    glibc
-m          glibc
-gl         mesa
-glu        mesa
-glut       freeglut
-db_cxx     db
-sqlite3    sqlite3
-xdamage    libxdamage
-
-icui18n          icu
-icuuc            icu
-icudata          icu
-
-netsnmp        net-snmp
-asound         alsa-lib
-ffi            libffi
-ogg            libogg
-theora         libtheora
-mtp            libmtp
-cv             opencv
-highgui        opencv
-xss            libxss
-idn            libidn
-libgsasl       gsasl
-event          libevent
-gcc_s          gcc-libs
-stdc++         gcc-libs
-
-# subsumed into glib
-
-gobject                glib2
-gmodule                glib2
-gio                    glib2
-gthread                glib
+adns                            adns
+alut                            freealut
+asound                          alsa-lib
+bz2                             bzip2
+cairo                           cairo
+cblas                           blas
+crack                           cracklib
+crypt                           glibc
+crypto                          openssl
+csound64                        csound5
+curl                            curl
+curses                          ncurses
+cv                              opencv
+db_cxx                          db
+doublefann                      fann
+event                           libevent
+ev                              libev
+exif                            libexif
+ffi                             libffi
+fftw3                           fftw
+freetype                        freetype2
+gcc_s                           gcc-libs
+gcrypt                          libgcrypt
+gdk                             gtk
+gdk-x11-2.0                     gtk2
+gio                             glib2
+glib                            glib2
+gl                              mesa
+glu                             mesa
+glut                            freeglut
+gmodule                         glib2
 gnome-vfs-module
-gstreamer-audio        gstreamer0.10-base
-gstreamer-base         gstreamer0.10
-gstreamer-controller   gstreamer0.10
-gstreamer-dataprotocol gstreamer0.10
-gstreamer-net          gstreamer0.10
+gnutls-extra                    gnutls
+gnutls                          gnutls
+gobject                         glib2
+gstreamer-audio                 gstreamer0.10-base
+gstreamer-base                  gstreamer0.10
+gstreamer-controller            gstreamer0.10
+gstreamer-dataprotocol          gstreamer0.10
+gstreamer                       gstreamer0.10
+gstreamer-net                   gstreamer0.10
+gstreamer-plugins-base          gstreamer0.10-base
+gthread                         glib
+gtk+                            gtk2
+gtk-x11-2.0                     gtk2
+highgui                         opencv
+icudata                         icu
+icui18n                         icu
+icuuc                           icu
+idn                             libidn
+il                              devil
+Imlib2                          imlib2
+jpeg                            libjpeg
+ldap                            libldap
+libgsasl                        gsasl
+libxml                          libxml2
+m                               glibc
+mtp                             libmtp
+ncurses                         ncurses
+ncursesw                        ncurses
+netsnmp                         net-snmp
+odbc                            unixodbc
+ogg                             libogg
 ogremain
-
-webkit      libwebkit
-cairo       cairo
-pango       pango
-pangocairo  pango
-gtk+        gtk2
-gdk         gtk
-gdk-x11-2.0 gtk2
-gtk-x11-2.0 gtk2
-vte         vte
-xine        xine-lib
-ncurses     ncurses
-ncursesw    ncurses
-panel       ncurses
-
-gstreamer              gstreamer0.10
-gstreamer-plugins-base gstreamer0.10-base
-
-# Packages from AUR
-xenctrl    xen
-csound64   csound5
-doublefann fann
-zmq        zeromq
+panel                           ncurses
+pangocairo                      pango
+pango                           pango
+pcap                            libpcap
+png                             libpng
+pq                              postgresql
+pthread                         glibc
+SDL                             sdl
+sndfile                         libsndfile
+sqlite3                         sqlite3
+ssl                             openssl
+stdc++                          gcc-libs
+theora                          libtheora
+tiff                            libtiff
+uuid                            e2fsprogs
+vte                             vte
+webkit                          libwebkit
+wmflite                         libwmf
+wx                              wxgtk
+x11                             libx11
+xdamage                         libxdamage
+xenctrl                         xen
+xine                            xine-lib
+xml2                            libxml2
+xrandr                          libxrandr
+xslt                            libxslt
+xss                             libxss
+zmq                             zeromq
+z                               zlib
