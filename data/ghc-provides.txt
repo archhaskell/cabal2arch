@@ -4,7 +4,7 @@
 # http://haskell.org/haskellwiki/Libraries_released_with_GHC
 #
 
-# Internal GHC packages:
+base                    ==4.3.1.0
 bin-package-db          ==0.0.0.0
 ffi                     ==1.0
 ghc                     ==7.0.2
