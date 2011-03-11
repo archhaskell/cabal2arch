@@ -1,6 +1,27 @@
 # Packages that are not part of GHC, but are required by Haskell Platform.
 
-# HP 2011.2.0.0:
+# HP 2011.2.0.0 packages provided by GHC 7.0.2:
+array                   ==0.3.0.2
+base                    ==4.3.1.0
+bytestring              ==0.9.1.10
+Cabal                   ==1.10.1.0
+containers              ==0.4.0.0
+directory               ==1.1.0.0
+extensible-exceptions   ==0.1.1.2
+filepath                ==1.2.0.0
+haskell2010             ==1.0.0.0
+haskell98               ==1.1.0.1
+hpc                     ==0.5.0.6
+old-locale              ==1.0.0.2
+old-time                ==1.0.0.6
+pretty                  ==1.0.1.2
+process                 ==1.0.1.5
+random                  ==1.0.0.3
+template-haskell        ==2.5.0.0
+time                    ==1.2.0.3
+unix                    ==2.4.2.0
+
+# HP 2011.2.0.0 packages not provided by GHC 7.0.2:
 cgi                     ==3001.1.7.4
 fgl                     ==5.4.2.3
 GLUT                    ==2.1.2.1
