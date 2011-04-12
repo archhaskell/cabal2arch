@@ -3,6 +3,8 @@
 # providing them.
 #
 
+Imlib2                          imlib2
+SDL                             sdl
 adns                            adns
 alut                            freealut
 asound                          alsa-lib
@@ -18,31 +20,32 @@ curses                          ncurses
 cv                              opencv
 db_cxx                          db
 doublefann                      fann
-event                           libevent
 ev                              libev
+event                           libevent
 exif                            libexif
 ffi                             libffi
 fftw3                           fftw
 freetype                        freetype2
 gcc_s                           gcc-libs
+gconf                           gconf
 gcrypt                          libgcrypt
 gdk                             gtk
 gdk-x11-2.0                     gtk2
 gio                             glib2
-glib                            glib2
 gl                              mesa
+glib                            glib2
 glu                             mesa
 glut                            freeglut
 gmodule                         glib2
 gnome-vfs-module
-gnutls-extra                    gnutls
 gnutls                          gnutls
+gnutls-extra                    gnutls
 gobject                         glib2
+gstreamer                       gstreamer0.10
 gstreamer-audio                 gstreamer0.10-base
 gstreamer-base                  gstreamer0.10
 gstreamer-controller            gstreamer0.10
 gstreamer-dataprotocol          gstreamer0.10
-gstreamer                       gstreamer0.10
 gstreamer-net                   gstreamer0.10
 gstreamer-plugins-base          gstreamer0.10-base
 gthread                         glib
@@ -54,7 +57,6 @@ icui18n                         icu
 icuuc                           icu
 idn                             libidn
 il                              devil
-Imlib2                          imlib2
 jpeg                            libjpeg
 ldap                            libldap
 libgsasl                        gsasl
@@ -68,13 +70,13 @@ odbc                            unixodbc
 ogg                             libogg
 ogremain
 panel                           ncurses
-pangocairo                      pango
 pango                           pango
+pangocairo                      pango
 pcap                            libpcap
+pcre                            pcre
 png                             libpng
 pq                              postgresql
 pthread                         glibc
-SDL                             sdl
 sndfile                         libsndfile
 sqlite3                         sqlite3
 ssl                             openssl
@@ -94,5 +96,5 @@ xml2                            libxml2
 xrandr                          libxrandr
 xslt                            libxslt
 xss                             libxss
-zmq                             zeromq
 z                               zlib
+zmq                             zeromq
