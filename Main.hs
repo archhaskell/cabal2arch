@@ -17,7 +17,6 @@
 -- rather than makedepends
 
 import Distribution.PackageDescription.Parse
-import Distribution.PackageDescription (GenericPackageDescription)
 import Distribution.Simple.Utils hiding (die)
 import Distribution.Verbosity
 import Distribution.Text
@@ -25,15 +24,12 @@ import Distribution.Text
 -- from the archlinux package:
 import Distribution.ArchLinux.PkgBuild
 import Distribution.ArchLinux.CabalTranslation
-import Distribution.ArchLinux.SystemProvides
-import Distribution.ArchLinux.HackageTranslation
 
 import Control.Monad
 import Control.Monad.Error
 import qualified Control.Exception as CE
 
 import Data.List
-import qualified Data.ByteString.Lazy as Bytes
 
 import Text.PrettyPrint
 
@@ -51,7 +47,6 @@ import Cabal2Arch.Util
 
 data CmdLnArgs
     = CmdLnConvertOne { argCabalFile :: String, argCreateTar :: Bool, argDataFiles :: String }
-    | CmdLnConvertMany { argPkgList :: FilePath, argTarBall :: FilePath, argRepo :: FilePath, argDataFiles :: String }
     deriving (Data, Typeable)
 
 cmdLnConvertOne :: CmdLnArgs
@@ -61,22 +56,8 @@ cmdLnConvertOne = CmdLnConvertOne
     , argDataFiles = "" &= name "sysinfo" &= typDir &= explicit &= help "Use custom system information files."
     } &= auto &= name "conv" &= help "Convert a single CABAL file."
 
-cmdLnConvertMany :: CmdLnArgs
-cmdLnConvertMany = CmdLnConvertMany
-    { argPkgList = def &= argPos 0 &= typFile
-    , argTarBall = def &= argPos 1 &= typFile
-    , argRepo = def &= argPos 2 &= typDir
-    , argDataFiles = "" &= name "sysinfo" &= typDir &= explicit &= help "Use custom system information files."
-    } &= name "convtar" &= help "Convert a tarball of CABAL files into an ABS tree."
-    &= details
-        [ "  cabal2arch convtar list tar abs"
-        , "'list' is a file consisting of lines of the form \"<pkg name> <version>\"."
-        , "'tar' is a tar ball of package descriptions (CABAL files) like the one published on Hackage:", "  http://hackage.haskell.org/packages/archive/00-index.tar.gz"
-        , "'abs' is a directory where the ABS tree will be created."
-        ]
-
 cmdLnArgs :: CmdLnArgs
-cmdLnArgs = modes [cmdLnConvertOne, cmdLnConvertMany]
+cmdLnArgs = modes [cmdLnConvertOne]
     &= program "cabal2arch"
     &= summary ("cabal2arch, v. " ++ showVersion version ++ ": Convert .cabal file to ArchLinux source package")
 
@@ -172,41 +153,6 @@ subCmd (CmdLnConvertOne cabalLoc createTar dataFiles) =
                                 (arch_pkgname pkgbuild ++ "-" ++ (display $ arch_pkgver pkgbuild))
                                 (arch_pkgdesc pkgbuild)
                                 (arch_url pkgbuild)) ++ "\n"
-
-subCmd (CmdLnConvertMany pkgListLoc tarballLoc repoLoc dataFiles) = do
-    pkglist <- readFile pkgListLoc
-    tarball <- Bytes.readFile tarballLoc
-    repo <- canonicalizePath repoLoc
-    email <- do
-        r <- getEnvMaybe "ARCH_HASKELL"
-        case r of
-            Nothing -> do
-                hPutStrLn stderr "Warning: ARCH_HASKELL environment variable not set. Set this to the maintainer contact you wish to use. \n E.g. 'Arch Haskell Team <arch-haskell@haskell.org>'"
-                return []
-            Just s  -> return s
-    maybeSysProvides <- runErrorT $ getSystemProvidesFromPath dataFiles
-    sysProvides <- case maybeSysProvides of
-        Left s -> die s
-        Right sp -> return sp
-    let cabals = getSpecifiedCabalsFromTarball tarball (lines pkglist)
-    mapM_ (exportPackage repo email sysProvides) cabals
-
-exportPackage :: FilePath -> String -> SystemProvides -> GenericPackageDescription -> IO ()
-exportPackage dot email sysProvides p = do
-    let q = preprocessCabal p sysProvides
-    case q of
-        Nothing -> return ()
-        Just p' -> do
-            let (pkg, script) = cabal2pkg p' sysProvides
-                pkgname = arch_pkgname (pkgBody pkg)
-            pkgbuild  <- getMD5 pkg
-            let apkgbuild = pkgbuild { pkgBuiltWith = Just version }
-                rawpkgbuild = (render $ pkg2doc email apkgbuild) ++ "\n"
-            createDirectoryIfMissing True (dot </> pkgname)
-            writeFile (dot </> pkgname </> "PKGBUILD") rawpkgbuild
-            case script of
-                Nothing -> return ()
-                Just s -> writeFile (dot </> pkgname </> (install_hook_name pkgname)) s
 
 ------------------------------------------------------------------------
 
