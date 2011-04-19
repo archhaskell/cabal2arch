@@ -1,44 +1,43 @@
-name:               cabal2arch
-version:            1.0
-homepage:           http://github.com/archhaskell/
-synopsis:           Create Arch Linux packages from Cabal packages.
-description:        Create Arch Linux packages from Cabal packages.
-category:           Distribution
-license:            BSD3
-license-file:       LICENSE
-author:             Don Stewart <dons@galois.com>,
-		    Matthew William Cox <matt@mattcox.ca>,
-		    Adam Vogt <vogt.adam@gmail.com>,
-		    Asgaroth <asgaroth_@gmx.de>,
-		    Rémy Oudompheng <remyoudompheng@gmail.com>,
-		    Magnus Therning <magnus@therning.org>,
-		    Peter Simons <simons@cryp.to>
-
-maintainer:         ArchHaskell Team <arch-haskell@haskell.org>
-cabal-version:      >= 1.6
-build-type:         Simple
-data-files:         data/*.txt
+name:           cabal2arch
+version:        1.0
+homepage:       http://github.com/archhaskell/
+synopsis:       Create Arch Linux packages from Cabal packages.
+description:    Create Arch Linux packages from Cabal packages.
+category:       Distribution
+license:        BSD3
+license-file:   LICENSE
+author:         Don Stewart <dons@galois.com>,
+                Matthew William Cox <matt@mattcox.ca>,
+                Adam Vogt <vogt.adam@gmail.com>,
+                Asgaroth <asgaroth_@gmx.de>,
+                Rémy Oudompheng <remyoudompheng@gmail.com>,
+                Magnus Therning <magnus@therning.org>,
+                Peter Simons <simons@cryp.to>
+maintainer:     ArchHaskell Team <arch-haskell@haskell.org>
+cabal-version:  >= 1.6
+build-type:     Simple
+data-files:     data/*.txt
 
 source-repository head
-  type:                 git
-  location:             git://github.com/archhaskell/cabal2arch.git
+  type:         git
+  location:     git://github.com/archhaskell/cabal2arch.git
 
 executable cabal2arch
-    main-is:            Main.hs
-    ghc-options:        -Wall
+  main-is:      Main.hs
+  ghc-options:  -Wall
 
-    build-depends:
-        base >= 4 && <= 6,
-        pretty,
-        process,
-        directory,
-        containers,
-        bytestring,
-        Cabal > 1.8,
-        filepath,
-        mtl,
-        archlinux >= 1 && < 2,
-        cmdargs
+  build-depends:
+    base >= 4 && <= 6,
+    pretty,
+    process,
+    directory,
+    containers,
+    bytestring,
+    Cabal > 1.8,
+    filepath,
+    mtl,
+    archlinux >= 1 && < 2,
+    cmdargs
 
-    other-modules:
-        Cabal2Arch.Util
+  other-modules:
+    Cabal2Arch.Util
