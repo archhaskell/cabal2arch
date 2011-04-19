@@ -47,8 +47,9 @@ getFromFile path = do
      then throwError ("File " ++ path ++ " does not exist!")
      else liftIO (readFile path)
 
--- getDefaultSystemProvides = getSystemProvidesFromPath "http://andromeda.kiwilight.com/~remy.oudompheng/arch-haskell/default"
+getDefaultSystemProvides :: ErrorT String IO SystemProvides
 getDefaultSystemProvides = getSystemProvidesFromPath =<< (liftIO $ getDataFileName "data")
+                        -- getSystemProvidesFromPath "http://andromeda.kiwilight.com/~remy.oudompheng/arch-haskell/default"
 
 getSystemProvidesFromPath :: String -> IOErr SystemProvides
 getSystemProvidesFromPath dir
