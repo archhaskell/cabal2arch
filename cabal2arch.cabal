@@ -1,12 +1,19 @@
 name:               cabal2arch
-version:            0.8.0
+version:            1.0
 homepage:           http://github.com/archhaskell/
 synopsis:           Create Arch Linux packages from Cabal packages.
 description:        Create Arch Linux packages from Cabal packages.
 category:           Distribution
 license:            BSD3
 license-file:       LICENSE
-author:             Don Stewart <dons@galois.com>
+author:             Don Stewart <dons@galois.com>,
+		    Matthew William Cox <matt@mattcox.ca>,
+		    Adam Vogt <vogt.adam@gmail.com>,
+		    Asgaroth <asgaroth_@gmx.de>,
+		    Rémy Oudompheng <remyoudompheng@gmail.com>,
+		    Magnus Therning <magnus@therning.org>,
+		    Peter Simons <simons@cryp.to>
+
 maintainer:         ArchHaskell Team <arch-haskell@haskell.org>
 cabal-version:      >= 1.6
 build-type:         Simple
@@ -30,7 +37,7 @@ executable cabal2arch
         Cabal > 1.8,
         filepath,
         mtl,
-        archlinux >= 0.3.6,
+        archlinux >= 1 && < 2,
         cmdargs
 
     other-modules:
