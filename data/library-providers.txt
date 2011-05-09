@@ -51,6 +51,7 @@ gstreamer-plugins-base          gstreamer0.10-base
 gthread                         glib
 gtk+                            gtk2
 gtk-x11-2.0                     gtk2
+gtksourceview                   gtksourceview2
 highgui                         opencv
 icudata                         icu
 icui18n                         icu
