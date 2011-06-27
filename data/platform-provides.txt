@@ -1,6 +1,6 @@
 # Packages that are not part of GHC, but are required by Haskell Platform.
 
-# HP 2011.2.0.0 packages provided by GHC 7.0.2:
+# HP 2011.2.0.0 packages provided by GHC 7.0.3:
 array                   ==0.3.0.2
 bytestring              ==0.9.1.10
 Cabal                   ==1.10.1.0
