@@ -1,3 +1,9 @@
+*This tool is no longer maintained*
+
+Nowadays we use [cblrepo](https://github.com/magthe/cblrepo) to maintain the haskell packages in HABS.
+
+Please let us know if you would have use of `cabal2arch` and want to take over maintainership.
+
 cabal2arch
 ==========
 
